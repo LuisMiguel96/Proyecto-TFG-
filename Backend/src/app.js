@@ -9,6 +9,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var stravaRouter = require('./routes/stravaroutes');
 var activitiesRouter = require('./routes/activities');
+var analyzedRouter = require('./routes/analyzed');
 
 var app = express();
 
@@ -31,6 +32,7 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/api/strava', stravaRouter);
 app.use('/api/activities', activitiesRouter);
+app.use('/api/analyzed', analyzedRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
