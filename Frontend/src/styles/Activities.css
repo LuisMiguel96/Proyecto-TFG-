@@ -1,0 +1,684 @@
+.activities-page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  min-height: calc(100vh - 80px);
+}
+
+.activities-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.activities-header h1 {
+  font-size: 2.5rem;
+  color: var(--secondary-color);
+  margin-bottom: 0.5rem;
+}
+
+.activities-header p {
+  color: var(--text-light);
+  font-size: 1.1rem;
+}
+
+.user-input-section {
+  max-width: 600px;
+  margin: 0 auto 3rem;
+}
+
+/* Login Card Styles */
+.login-card {
+  max-width: 500px;
+  margin: 0 auto 3rem;
+  background: var(--card-bg);
+  border-radius: 20px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.login-header {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  text-align: center;
+  padding: 3rem 2rem;
+}
+
+.strava-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.login-header h2 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.login-header p {
+  opacity: 0.9;
+  font-size: 1.1rem;
+}
+
+.login-form {
+  padding: 2rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  color: var(--secondary-color);
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.filter-select-login,
+.user-id-input {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
+  outline: none;
+  transition: all 0.3s;
+  background-color: white;
+}
+
+.filter-select-login:focus,
+.user-id-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(252, 82, 0, 0.1);
+}
+
+.login-button {
+  width: 100%;
+  background: linear-gradient(135deg, var(--primary-color), #ff7733);
+  color: white;
+  border: none;
+  padding: 1.2rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow);
+  margin-top: 1rem;
+}
+
+.login-button:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+.change-user-link {
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  padding: 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.3s;
+}
+
+.change-user-link:hover {
+  color: var(--secondary-color);
+}
+
+/* User Info Card Styles */
+.user-info-card {
+  max-width: 800px;
+  margin: 0 auto 3rem;
+  background: var(--card-bg);
+  border-radius: 15px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.user-info-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-bottom: 2px solid var(--border-color);
+}
+
+.user-avatar {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-color), #ff7733);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  color: white;
+  box-shadow: var(--shadow);
+}
+
+.user-details {
+  flex: 1;
+}
+
+.user-details h3 {
+  font-size: 1.8rem;
+  color: var(--secondary-color);
+  margin-bottom: 0.3rem;
+}
+
+.user-status {
+  color: #28a745;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.user-actions {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.change-user-btn,
+.logout-btn {
+  padding: 0.7rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.change-user-btn {
+  background-color: var(--secondary-color);
+  color: white;
+}
+
+.change-user-btn:hover {
+  background-color: var(--primary-color);
+}
+
+.logout-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.logout-btn:hover {
+  background-color: #c82333;
+  transform: translateY(-2px);
+}
+
+.change-user-section {
+  padding: 1.5rem 2rem;
+  background-color: #fff8f0;
+  border-top: 2px solid var(--primary-color);
+}
+
+.change-user-form {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.change-user-input {
+  flex: 1;
+  padding: 0.8rem 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.change-user-input:focus {
+  border-color: var(--primary-color);
+}
+
+.apply-user-btn,
+.cancel-user-btn {
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.apply-user-btn {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.apply-user-btn:hover {
+  background-color: #e04800;
+}
+
+.cancel-user-btn {
+  background-color: #6c757d;
+  color: white;
+}
+
+.cancel-user-btn:hover {
+  background-color: #5a6268;
+}
+
+.user-form {
+  display: flex;
+  gap: 1rem;
+  background: var(--card-bg);
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  flex-wrap: wrap;
+}
+
+.user-input {
+  flex: 2;
+  min-width: 200px;
+  padding: 0.8rem 1.2rem;
+  font-size: 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 5px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.user-input:focus {
+  border-color: var(--primary-color);
+}
+
+.user-form .filter-select {
+  flex: 1;
+  min-width: 180px;
+  padding: 0.8rem 1rem;
+  font-size: 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 5px;
+  outline: none;
+  cursor: pointer;
+  background-color: white;
+  transition: border-color 0.3s;
+}
+
+.user-form .filter-select:focus {
+  border-color: var(--primary-color);
+}
+
+.load-button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.8rem 2rem;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.load-button:hover {
+  background-color: #e04800;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.loading {
+  text-align: center;
+  padding: 4rem;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid var(--border-color);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-message {
+  background-color: #ffe6e6;
+  border-left: 4px solid #ff4444;
+  padding: 1.5rem;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 2rem auto;
+  max-width: 600px;
+}
+
+.error-message span {
+  font-size: 1.5rem;
+}
+
+.filters-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  background: var(--card-bg);
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+
+.filters-section label {
+  font-weight: bold;
+  color: var(--secondary-color);
+}
+
+.filter-select {
+  padding: 0.6rem 1rem;
+  font-size: 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 5px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.filter-select:focus {
+  border-color: var(--primary-color);
+}
+
+.activities-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, var(--primary-color), #ff7733);
+  color: white;
+  padding: 2rem;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.stat-card h3 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.stat-card p {
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+/* Tabla de actividades */
+.table-container {
+  background: var(--card-bg);
+  border-radius: 15px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.activities-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.activities-table thead {
+  background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+  color: white;
+}
+
+.activities-table th {
+  padding: 1.2rem 1rem;
+  text-align: left;
+  font-weight: bold;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.activities-table tbody tr {
+  border-bottom: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.activities-table tbody tr:hover {
+  background-color: #f8f9fa;
+  transform: scale(1.01);
+}
+
+.activities-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.activities-table td {
+  padding: 1rem;
+  color: var(--text-dark);
+}
+
+.icon-cell {
+  font-size: 1.5rem;
+  text-align: center;
+  width: 60px;
+}
+
+.name-cell {
+  font-weight: 600;
+  color: var(--secondary-color);
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.number-cell {
+  text-align: center;
+  font-weight: 500;
+  color: var(--primary-color);
+}
+
+.view-details-btn {
+  background: linear-gradient(135deg, var(--primary-color), #ff7733);
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 25px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 8px rgba(252, 82, 0, 0.3);
+}
+
+.view-details-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(252, 82, 0, 0.5);
+}
+
+.activities-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 2rem;
+}
+
+.no-activities {
+  text-align: center;
+  padding: 4rem;
+  color: var(--text-light);
+  font-size: 1.2rem;
+}
+
+@media (max-width: 768px) {
+  .activities-page {
+    padding: 1rem;
+  }
+
+  .user-form {
+    flex-direction: column;
+  }
+
+  .activities-header h1 {
+    font-size: 2rem;
+  }
+
+  /* Login Card Responsive */
+  .login-card {
+    margin: 0 1rem 2rem;
+  }
+
+  .login-header {
+    padding: 2rem 1.5rem;
+  }
+
+  .login-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .strava-icon {
+    font-size: 3rem;
+  }
+
+  /* User Info Card Responsive */
+  .user-info-header {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.5rem;
+  }
+
+  .user-details h3 {
+    font-size: 1.4rem;
+  }
+
+  .user-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .change-user-btn,
+  .logout-btn {
+    width: 100%;
+  }
+
+  .change-user-form {
+    flex-direction: column;
+  }
+
+  .apply-user-btn,
+  .cancel-user-btn {
+    width: 100%;
+  }
+
+  /* Hacer la tabla responsive */
+  .table-container {
+    overflow-x: auto;
+  }
+
+  .activities-table {
+    min-width: 800px;
+  }
+
+  .activities-table th,
+  .activities-table td {
+    padding: 0.8rem 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .view-details-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* User Info Card - Simplificada para usuario autenticado */
+.user-info-card-simple {
+  background: white;
+  border-radius: 15px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 2rem;
+}
+
+.user-info-card-simple .user-info-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.user-info-card-simple .user-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid var(--primary-color);
+}
+
+.user-info-card-simple .user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-info-card-simple .user-details h3 {
+  margin: 0;
+  color: var(--secondary-color);
+  font-size: 1.3rem;
+}
+
+.user-info-card-simple .user-status {
+  margin: 0.3rem 0 0;
+  color: #28a745;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.filter-section-inline {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.filter-section-inline label {
+  font-weight: 600;
+  color: var(--secondary-color);
+  font-size: 1rem;
+}
+
+.filter-section-inline .filter-select {
+  padding: 0.7rem 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
+  font-size: 1rem;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 250px;
+}
+
+.filter-section-inline .filter-select:hover {
+  border-color: var(--primary-color);
+}
+
+.filter-section-inline .filter-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(252, 82, 0, 0.1);
+}
+

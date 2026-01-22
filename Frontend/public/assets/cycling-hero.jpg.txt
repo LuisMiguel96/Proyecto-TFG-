@@ -1,0 +1,19 @@
+# Placeholder para cycling-hero.jpg
+
+Esta es una imagen temporal. 
+
+## Para reemplazar:
+1. Descarga una imagen de ciclismo de alta calidad desde:
+   - https://unsplash.com/s/photos/cycling
+   - https://www.pexels.com/search/cycling/
+
+2. Guarda la imagen como: `cycling-hero.jpg`
+3. Colócala en esta carpeta (`src/assets/`)
+
+## Sugerencias de búsqueda:
+- "mountain biking sunset"
+- "road cycling race"
+- "cyclist training"
+- "bike ride landscape"
+
+Mientras tanto, la aplicación usa una imagen de Unsplash como fallback.
