@@ -1,0 +1,263 @@
+:root {
+  --primary-color: #fc5200;
+  --secondary-color: #242428;
+  --text-dark: #333;
+  --text-light: #666;
+  --bg-color: #f8f9fa;
+  --border-color: #e0e0e0;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --strava-orange: #fc5200;
+}
+
+.login-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.login-container {
+  max-width: 1200px;
+  width: 100%;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  color: white;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.logo-icon {
+  font-size: 4rem;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.login-header h1 {
+  font-size: 3rem;
+  margin: 0;
+  font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.login-subtitle {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.login-card {
+  background: white;
+  padding: 3rem;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  margin: 0 auto 3rem;
+}
+
+.login-card h2 {
+  text-align: center;
+  color: var(--secondary-color);
+  margin-bottom: 2rem;
+  font-size: 2rem;
+}
+
+.login-error {
+  background: #fee;
+  border: 1px solid #fcc;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.login-error span {
+  font-size: 1.5rem;
+}
+
+.login-error p {
+  margin: 0;
+  color: #c33;
+  font-weight: 500;
+}
+
+.strava-login-btn {
+  width: 100%;
+  padding: 1rem 2rem;
+  background: var(--strava-orange);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(252, 82, 0, 0.3);
+}
+
+.strava-login-btn:hover:not(:disabled) {
+  background: #e04900;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(252, 82, 0, 0.4);
+}
+
+.strava-login-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.strava-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.login-divider {
+  display: flex;
+  align-items: center;
+  margin: 2rem 0;
+  color: var(--text-light);
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-color);
+}
+
+.login-divider span {
+  padding: 0 1rem;
+  font-weight: 600;
+}
+
+.demo-login-btn {
+  width: 100%;
+  padding: 1rem 2rem;
+  background: var(--bg-color);
+  color: var(--secondary-color);
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  transition: all 0.3s ease;
+}
+
+.demo-login-btn:hover {
+  background: white;
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.demo-login-btn span {
+  font-size: 1.5rem;
+}
+
+.login-info {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: var(--text-light);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.login-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.feature {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 2rem;
+  border-radius: 15px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.feature:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-5px);
+}
+
+.feature-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.feature h3 {
+  color: white;
+  margin-bottom: 0.5rem;
+  font-size: 1.3rem;
+}
+
+.feature p {
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 768px) {
+  .login-page {
+    padding: 1rem;
+  }
+
+  .login-header h1 {
+    font-size: 2rem;
+  }
+
+  .logo-icon {
+    font-size: 3rem;
+  }
+
+  .login-subtitle {
+    font-size: 1rem;
+  }
+
+  .login-card {
+    padding: 2rem 1.5rem;
+  }
+
+  .login-card h2 {
+    font-size: 1.5rem;
+  }
+
+  .login-features {
+    grid-template-columns: 1fr;
+  }
+}
