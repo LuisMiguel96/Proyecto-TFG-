@@ -10,6 +10,7 @@ var usersRouter = require('./routes/users');
 var stravaRouter = require('./routes/stravaroutes');
 var activitiesRouter = require('./routes/activities');
 var analyzedRouter = require('./routes/analyzed');
+var mlRouter= require('./routes/ml');
 
 var app = express();
 
@@ -33,6 +34,8 @@ app.use('/users', usersRouter);
 app.use('/api/strava', stravaRouter);
 app.use('/api/activities', activitiesRouter);
 app.use('/api/analyzed', analyzedRouter);
+app.use('/api/ml',mlRouter);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
