@@ -1,3 +1,6 @@
 Backend/.env
 Backend/node_modules/
-Frontend/node_modules/
+Frontend/node_modules/ML/outputs/*.csv
+ML/outputs/*.parquet
+ML/datos/*.fit
+ML/datos/*.gz
