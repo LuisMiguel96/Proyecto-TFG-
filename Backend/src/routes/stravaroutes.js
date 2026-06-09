@@ -95,7 +95,20 @@ router.get('/activities/:userId', async (req, res) => {
         averageHeartrate: activity.average_heartrate,
         maxHeartrate: activity.max_heartrate,
         // Otros datos útiles
-        calories: activity.calories,
+        // Calorías
+       calories: activity.calories,
+      // Potencia (vatios)
+        averageWatts: activity.average_watts,
+        weightedAverageWatts: activity.weighted_average_watts,
+        maxWatts: activity.max_watts,
+        kilojoules: activity.kilojoules,
+        // Cadencia
+        averageCadence: activity.average_cadence,
+        deviceWatts: activity.device_watts || false,
+        // Ubicación
+        startLatlng: activity.start_latlng,
+        endLatlng: activity.end_latlng,
+        mapPolyline: activity.map?.summary_polyline,
         startLatlng: activity.start_latlng,
         endLatlng: activity.end_latlng,
         mapPolyline: activity.map?.summary_polyline
@@ -119,5 +132,24 @@ router.get('/activities/:userId', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+router.get('/streams/:userId/:stravaId', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId)
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' })
+
+    const response = await axios.get(
+      `https://www.strava.com/api/v3/activities/${req.params.stravaId}/streams`,
+      {
+        headers: { Authorization: `Bearer ${user.accessToken}` },
+        params: { keys: 'altitude,velocity_smooth,watts,distance', key_by_type: true }
+      }
+    )
+
+    res.json(response.data)
+  } catch (error) {
+    console.error('Error streams:', error.response?.data || error.message)
+    res.status(500).json({ error: error.message })
+  }
+})
 
 module.exports = router;

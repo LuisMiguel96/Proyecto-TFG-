@@ -1,12 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { getActivityDetail, addToAnalyzed, removeFromAnalyzedByActivity, checkIfAnalyzed } from '../utils/apiCalls'
 import { MapContainer, TileLayer, Polyline, Marker, Popup } from 'react-leaflet'
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import MLDashboard from '../components/MLDashboard'
 import GaugeChart from 'react-gauge-chart'
 import 'leaflet/dist/leaflet.css'
 import '../styles/ActivityDetail.css'
+import polyline from '@mapbox/polyline'
+import axios from 'axios'
 
 function ActivityDetail() {
   const { id } = useParams()
@@ -20,11 +23,36 @@ function ActivityDetail() {
   const [currentSpeed, setCurrentSpeed] = useState(0)
   const [isAnalyzed, setIsAnalyzed] = useState(false)
   const [analyzingLoading, setAnalyzingLoading] = useState(false)
+  const [streams, setStreams] = useState(null)
+  const [displaySpeed, setDisplaySpeed] = useState(0)
+
+
 
   useEffect(() => {
     fetchActivityDetail()
     checkIfAnalyzedStatus()
   }, [id])
+
+  const streamsLoaded = useRef(false)
+
+  const fetchStreams = async (stravaId) => {
+    if (streamsLoaded.current) return
+    streamsLoaded.current = true
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/api/strava/streams/${user.id}/${stravaId}`
+      )
+      setStreams(response.data)
+    } catch (err) {
+      console.error('Error cargando streams:', err)
+    }
+  }
+
+  useEffect(() => {
+    if (activity?.stravaId) {
+      fetchStreams(activity.stravaId)
+    }
+  }, [activity?.stravaId])
 
   const fetchActivityDetail = async () => {
     try {
@@ -40,7 +68,7 @@ function ActivityDetail() {
 
   const checkIfAnalyzedStatus = async () => {
     if (!user || !user.id) return
-    
+
     try {
       const data = await checkIfAnalyzed(user.id, id)
       setIsAnalyzed(data.isAnalyzed)
@@ -82,9 +110,9 @@ function ActivityDetail() {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString)
-    return date.toLocaleDateString('es-ES', { 
-      year: 'numeric', 
-      month: 'long', 
+    return date.toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
@@ -130,32 +158,32 @@ function ActivityDetail() {
   // Datos simulados para gráficos (en producción vendrían del stream de datos de Strava)
   const generateMockData = () => {
     if (!activity) return []
-    
+
     const points = 100 // Más puntos para mejor interactividad
     const data = []
     const distance = activity.distance / 1000
     const avgSpeed = activity.averageSpeed * 3.6
     const maxElevation = activity.totalElevationGain || 100
-    
+
     for (let i = 0; i <= points; i++) {
       const distancePoint = (distance / points) * i
       const progress = i / points
-      
+
       // Variación de velocidad más realista
       const speedVariation = Math.sin(progress * Math.PI * 3) * 8 + (Math.random() - 0.5) * 4
       const speed = Math.max(5, Math.min(avgSpeed * 1.5, avgSpeed + speedVariation))
-      
+
       // Perfil de elevación más realista
       const elevationBase = Math.sin(progress * Math.PI * 2) * (maxElevation / 2)
       const elevationNoise = Math.sin(progress * Math.PI * 10) * (maxElevation / 10)
       const elevation = Math.max(0, elevationBase + elevationNoise + (maxElevation / 2))
-      
+
       // Generar coordenadas simuladas para el mapa (en producción vendrían de la API)
       const baseLat = 40.4168 // Madrid como ejemplo
       const baseLon = -3.7038
       const lat = baseLat + (progress * 0.05) + (Math.random() - 0.5) * 0.01
       const lon = baseLon + (progress * 0.05) + (Math.random() - 0.5) * 0.01
-      
+
       data.push({
         index: i,
         distance: distancePoint.toFixed(2),
@@ -166,20 +194,16 @@ function ActivityDetail() {
         lon
       })
     }
-    
+
     return data
   }
 
-  const chartData = generateMockData()
-  
-  // Extraer coordenadas para el mapa
-  const routeCoordinates = chartData.map(point => [point.lat, point.lon])
-  const centerPosition = routeCoordinates.length > 0 ? routeCoordinates[Math.floor(routeCoordinates.length / 2)] : [40.4168, -3.7038]
 
   // Manejar hover sobre el perfil de elevación
   const handleChartHover = (data) => {
     if (data && data.activePayload && data.activePayload[0]) {
       const point = data.activePayload[0].payload
+      console.log('punto:', point)
       setHoveredPoint(point)
       const newSpeed = parseFloat(point.velocidad)
       console.log('🚴 Velocidad actualizada:', newSpeed, 'km/h')
@@ -219,8 +243,25 @@ function ActivityDetail() {
       </div>
     )
   }
-
   if (!activity) return null
+  const chartData = streams
+    ? streams.distance.data.map((dist, i) => ({
+      distance: parseFloat((dist / 1000).toFixed(2)),
+      elevacion: parseFloat(streams.altitude?.data[i]?.toFixed(0) || 0),
+      velocidad: streams.velocity_smooth?.data[i]
+        ? parseFloat((streams.velocity_smooth.data[i] * 3.6).toFixed(1))
+        : 0,
+      vatios: streams.watts?.data[i] || 0
+    }))
+    : generateMockData()
+
+  const routeCoordinates = activity.mapPolyline
+    ? polyline.decode(activity.mapPolyline)
+    : []
+
+  const centerPosition = routeCoordinates.length > 0
+    ? routeCoordinates[Math.floor(routeCoordinates.length / 2)]
+    : [40.4168, -3.7038]
 
   return (
     <div className="activity-detail-page">
@@ -229,8 +270,8 @@ function ActivityDetail() {
           <button onClick={() => navigate('/activities')} className="back-button">
             ← Volver
           </button>
-          
-          <button 
+
+          <button
             onClick={handleToggleAnalyzed}
             disabled={analyzingLoading}
             className={isAnalyzed ? 'analyzed-button active' : 'analyzed-button'}
@@ -287,6 +328,51 @@ function ActivityDetail() {
             </div>
           </div>
         )}
+        {activity.averageWatts && (
+          <div className="metric-card-large">
+            <span className="metric-icon">⚡</span>
+            <div>
+              <h3>{Math.round(activity.averageWatts)} W</h3>
+              <p>Vatios Medios</p>
+            </div>
+          </div>
+        )}
+        {activity.weightedAverageWatts && (
+          <div className="metric-card-large">
+            <span className="metric-icon">💪</span>
+            <div>
+              <h3>{Math.round(activity.weightedAverageWatts)} W</h3>
+              <p>Vatios Normalizados</p>
+            </div>
+          </div>
+        )}
+        {activity.maxWatts && (
+          <div className="metric-card-large">
+            <span className="metric-icon">🚀</span>
+            <div>
+              <h3>{activity.maxWatts} W</h3>
+              <p>Vatios Máximos</p>
+            </div>
+          </div>
+        )}
+        {activity.kilojoules && (
+          <div className="metric-card-large">
+            <span className="metric-icon">🔋</span>
+            <div>
+              <h3>{Math.round(activity.kilojoules)} kJ</h3>
+              <p>Energía Total</p>
+            </div>
+          </div>
+        )}
+        {activity.averageCadence && (
+          <div className="metric-card-large">
+            <span className="metric-icon">🔄</span>
+            <div>
+              <h3>{Math.round(activity.averageCadence)} rpm</h3>
+              <p>Cadencia Media</p>
+            </div>
+          </div>
+        )}
         {activity.type === 'Run' && (
           <div className="metric-card-large">
             <span className="metric-icon">🎯</span>
@@ -302,9 +388,9 @@ function ActivityDetail() {
       <div className="map-container">
         <h2>🗺️ Mapa de la ruta</h2>
         <div className="map-wrapper">
-          <MapContainer 
-            center={centerPosition} 
-            zoom={13} 
+          <MapContainer
+            center={centerPosition}
+            zoom={13}
             style={{ height: '100%', width: '100%', borderRadius: '10px' }}
           >
             <TileLayer
@@ -325,8 +411,8 @@ function ActivityDetail() {
             {hoveredPoint && (
               <Marker position={[hoveredPoint.lat, hoveredPoint.lon]}>
                 <Popup>
-                  📍 Km {hoveredPoint.distance}<br/>
-                  ⚡ {hoveredPoint.velocidad} km/h<br/>
+                  📍 Km {hoveredPoint.distance}<br />
+                  ⚡ {hoveredPoint.velocidad} km/h<br />
                   ⛰️ {hoveredPoint.elevacion} m
                 </Popup>
               </Marker>
@@ -339,34 +425,43 @@ function ActivityDetail() {
       <div className="interactive-section">
         <h2>📊 Análisis Interactivo de la Ruta</h2>
         <p className="interactive-hint">💡 Pasa el cursor sobre el perfil de elevación para ver la velocidad en cada punto</p>
-        
+
         {/* Perfil de Elevación Interactivo - Ancho Completo */}
         <div className="elevation-profile-full">
           <h3>⛰️ Perfil de Elevación</h3>
-          <ResponsiveContainer width="100%" height={350}>
-            <AreaChart 
+          <ResponsiveContainer width="100%" height={350} style={{ overflow: 'visible' }}>
+            <AreaChart
               data={chartData}
-              onMouseMove={handleChartHover}
+              onMouseMove={(e) => {
+                if (e && e.activePayload && e.activePayload[0]) {
+                  const point = e.activePayload[0].payload
+                  setHoveredPoint(point)
+                  setCurrentSpeed(parseFloat(point.velocidad))
+                  setDisplaySpeed(parseFloat(point.velocidad))
+                }
+              }}
               onMouseLeave={handleChartLeave}
             >
               <defs>
                 <linearGradient id="colorElevation" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#fc5200" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#fc5200" stopOpacity={0.1}/>
+                  <stop offset="5%" stopColor="#fc5200" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="#fc5200" stopOpacity={0.1} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="distance" 
-                label={{ value: 'Distancia (km)', position: 'insideBottom', offset: -5 }} 
+              <XAxis
+                dataKey="distance"
+                label={{ value: 'Distancia (km)', position: 'insideBottom', offset: -5 }}
               />
-              <YAxis 
-                label={{ value: 'Elevación (m)', angle: -90, position: 'insideLeft' }} 
+              <YAxis
+                label={{ value: 'Elevación (m)', angle: -90, position: 'insideLeft' }}
               />
-              <Tooltip 
+              <Tooltip
                 content={({ active, payload }) => {
                   if (active && payload && payload[0]) {
                     const data = payload[0].payload
+                    setCurrentSpeed(parseFloat(data.velocidad))
+                    setDisplaySpeed(parseFloat(data.velocidad))
                     return (
                       <div className="custom-tooltip">
                         <p><strong>Distancia:</strong> {data.distance} km</p>
@@ -375,19 +470,21 @@ function ActivityDetail() {
                       </div>
                     )
                   }
+                  setDisplaySpeed(activity ? activity.averageSpeed * 3.6 : 0)
                   return null
                 }}
               />
-              <Area 
-                type="monotone" 
-                dataKey="elevacion" 
-                stroke="#fc5200" 
+              <Area
+                type="monotone"
+                dataKey="elevacion"
+                stroke="#fc5200"
                 strokeWidth={2}
-                fill="url(#colorElevation)" 
+                fill="url(#colorElevation)"
+
               />
             </AreaChart>
           </ResponsiveContainer>
-          
+
           {hoveredPoint && (
             <div className="hovered-info-inline">
               <span>📍 {hoveredPoint.distance} km</span>
@@ -402,25 +499,28 @@ function ActivityDetail() {
           <div className="speedometer-wrapper">
             <h4>⚡ Velocidad</h4>
             <div className="speed-display">
-              <span className="speed-value-large">{currentSpeed.toFixed(1)}</span>
+              <span className="speed-value-large" style={{ color: '#fc5200', fontSize: '2.5rem', fontWeight: 'bold' }}>
+                {currentSpeed.toFixed(1)}
+              </span>
               <span className="speed-unit-large">km/h</span>
             </div>
-            <div className="gauge-small">
-              <GaugeChart 
-                id="speed-gauge"
-                key={currentSpeed}
-                nrOfLevels={1}
-                colors={["#e0e0e0", "#fc5200"]}
-                arcWidth={0.25}
-                percent={Math.min(currentSpeed / (activity.maxSpeed * 3.6 * 1.2), 1)}
-                textColor="transparent"
-                hideText={true}
-                animate={false}
-                arcsLength={[1]}
-                needleColor="transparent"
-                needleBaseColor="transparent"
+            <svg viewBox="0 0 200 120" width="200" height="120" key={currentSpeed}>
+              <path
+                d="M 20 100 A 80 80 0 0 1 180 100"
+                fill="none"
+                stroke="#e0e0e0"
+                strokeWidth="20"
+                strokeLinecap="round"
               />
-            </div>
+              <path
+                d="M 20 100 A 80 80 0 0 1 180 100"
+                fill="none"
+                stroke={currentSpeed / (activity.maxSpeed * 3.6) < 0.5 ? "#2ecc71" : currentSpeed / (activity.maxSpeed * 3.6) < 0.75 ? "#f39c12" : "#e74c3c"}
+                strokeWidth="20"
+                strokeLinecap="round"
+                strokeDasharray={`${Math.min(currentSpeed / (activity.maxSpeed * 3.6), 1) * 251.2} 251.2`}
+              />
+            </svg>
           </div>
           <div className="speed-stats-compact">
             <div className="speed-stat-compact">
@@ -453,7 +553,7 @@ function ActivityDetail() {
       {/* Gráfico de Ritmo Cardíaco */}
       <div className="chart-container">
         <h2>❤️ Ritmo cardíaco</h2>
-        
+
         {activity.averageHeartrate ? (
           <>
             <div className="heartrate-stats">
@@ -511,10 +611,11 @@ function ActivityDetail() {
           </div>
         </div>
       </div>
-
+      {/* Análisis ML */}
+      <MLDashboard />
       {/* Botón de Análisis de Rendimiento */}
       <div className="performance-section">
-        <button 
+        <button
           className="performance-button"
           onClick={() => setShowPerformanceModal(true)}
         >
@@ -523,34 +624,36 @@ function ActivityDetail() {
       </div>
 
       {/* Modal de Rendimiento */}
-      {showPerformanceModal && (
-        <div className="modal-overlay" onClick={() => setShowPerformanceModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2>🎯 Análisis de Rendimiento</h2>
-            <p>Aquí podrás aplicar análisis avanzados a tu actividad:</p>
-            <ul>
-              <li>Comparar con actividades similares</li>
-              <li>Establecer objetivos de mejora</li>
-              <li>Análisis de zonas de potencia/frecuencia cardíaca</li>
-              <li>Recomendaciones personalizadas</li>
-            </ul>
-            <div className="modal-stats">
-              <div className="modal-stat">
-                <span>Eficiencia:</span>
-                <strong>{((activity.distance / activity.movingTime) * 100).toFixed(1)}%</strong>
+      {
+        showPerformanceModal && (
+          <div className="modal-overlay" onClick={() => setShowPerformanceModal(false)}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <h2>🎯 Análisis de Rendimiento</h2>
+              <p>Aquí podrás aplicar análisis avanzados a tu actividad:</p>
+              <ul>
+                <li>Comparar con actividades similares</li>
+                <li>Establecer objetivos de mejora</li>
+                <li>Análisis de zonas de potencia/frecuencia cardíaca</li>
+                <li>Recomendaciones personalizadas</li>
+              </ul>
+              <div className="modal-stats">
+                <div className="modal-stat">
+                  <span>Eficiencia:</span>
+                  <strong>{((activity.distance / activity.movingTime) * 100).toFixed(1)}%</strong>
+                </div>
+                <div className="modal-stat">
+                  <span>Intensidad:</span>
+                  <strong>{activity.averageSpeed > 5 ? 'Alta' : activity.averageSpeed > 3 ? 'Media' : 'Baja'}</strong>
+                </div>
               </div>
-              <div className="modal-stat">
-                <span>Intensidad:</span>
-                <strong>{activity.averageSpeed > 5 ? 'Alta' : activity.averageSpeed > 3 ? 'Media' : 'Baja'}</strong>
-              </div>
+              <button onClick={() => setShowPerformanceModal(false)} className="close-modal-button">
+                Cerrar
+              </button>
             </div>
-            <button onClick={() => setShowPerformanceModal(false)} className="close-modal-button">
-              Cerrar
-            </button>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   )
 }
 

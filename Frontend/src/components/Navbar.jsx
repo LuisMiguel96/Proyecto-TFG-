@@ -29,15 +29,18 @@ function Navbar() {
               <li className="nav-item">
                 <Link to="/analyzed" className="nav-link">📊 Analizadas</Link>
               </li>
+              <li className="nav-item">
+                <Link to="/performance" className="nav-link">🎯 Análisis Rendimiento</Link>
+              </li>
             </>
           )}
         </ul>
-        
+
         {isAuthenticated() ? (
           <div className="nav-user">
             <div className="user-info">
-              <img 
-                src={user?.profile || 'https://via.placeholder.com/40'} 
+              <img
+                src={user?.profile || 'https://via.placeholder.com/40'}
                 alt={`${user?.firstname} ${user?.lastname}`}
                 className="user-avatar"
               />
