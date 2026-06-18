@@ -14,7 +14,14 @@ MODEL_PATH = os.path.join(BASE_DIR, 'models', 'model_rnn.keras')
 SCALER_X_PATH = os.path.join(BASE_DIR, 'models', 'scaler_X.pkl')
 SCALER_Y_PATH = os.path.join(BASE_DIR, 'models', 'scaler_y.pkl')
 
-model = tf.keras.models.load_model(MODEL_PATH)
+model_rnn = tf.keras.models.load_model(MODEL_PATH)
+model_lstm = tf.keras.models.load_model(os.path.join(BASE_DIR, 'models', 'model_lstm.keras'))
+model_bilstm = tf.keras.models.load_model(os.path.join(BASE_DIR, 'models', 'model_bilstm.keras'))
+modelos = {
+    'rnn': model_rnn,
+    'lstm': model_lstm,
+    'bilstm': model_bilstm
+}
 with open(SCALER_X_PATH, 'rb') as f:
     scaler_X = pickle.load(f)
 with open(SCALER_Y_PATH, 'rb') as f:
@@ -25,6 +32,8 @@ class StreamData(BaseModel):
     velocity: List[float]
     watts: List[float]
     distance: List[float]
+    cadence: List[float]
+    modelo: str = 'rnn'
 
 @router.post("/analizar")
 def analizar_cliente(data: StreamData):
@@ -62,10 +71,14 @@ def analizar_cliente(data: StreamData):
         secuencias = np.array([X_scaled[i-60:i] for i in range(60, len(X_scaled))])
 
         # Predecir
-        preds_scaled = model.predict(secuencias, batch_size=256, verbose=0)
+        model_seleccionado = modelos.get(data.modelo, model_rnn)
+        preds_scaled = model_seleccionado.predict(secuencias, batch_size=256, verbose=0)
         preds_watts = scaler_y.inverse_transform(preds_scaled).flatten()
 
         watts_cliente = np.array(data.watts[60:])
+        cadence_arr = np.array(data.cadence[60:])
+        distance_arr = np.array(data.distance[60:])
+        velocity_arr = np.array(data.velocity[60:])
         diferencia = preds_watts - watts_cliente
 
         return {
@@ -73,11 +86,16 @@ def analizar_cliente(data: StreamData):
             "watts_optimo_medio": round(float(preds_watts.mean()), 1),
             "diferencia_media": round(float(diferencia.mean()), 1),
             "mejora_potencial_pct": round(float(diferencia.mean() / watts_cliente.mean() * 100), 1),
+            
             "serie": [
                 {
                     "segundo": int(i + 60),
                     "watts_cliente": round(float(watts_cliente[i]), 1),
-                    "watts_optimo": round(float(preds_watts[i]), 1)
+                    "watts_optimo": round(float(preds_watts[i]), 1),
+                    "cadencia": round(float(cadence_arr[i]), 1) if i < len(cadence_arr) else 0,
+                    "fuerza": round(float(watts_cliente[i] / (cadence_arr[i] * 2 * 3.14159 / 60)), 1) if i < len(cadence_arr) and cadence_arr[i] > 0 else 0,
+                    "velocidad": round(float(velocity_arr[i] * 3.6), 2) if i < len(velocity_arr) else 0,
+                    "distancia": round(float(distance_arr[i]), 1) if i < len(distance_arr) else 0
                 }
                 for i in range(0, len(preds_watts), 10)  # cada 10 segundos
             ]

@@ -428,7 +428,7 @@
   background: var(--card-bg);
   border-radius: 15px;
   box-shadow: var(--shadow);
-  overflow: hidden;
+  overflow-x: auto;
   margin-bottom: 2rem;
 }
 
@@ -522,87 +522,6 @@
   font-size: 1.2rem;
 }
 
-@media (max-width: 768px) {
-  .activities-page {
-    padding: 1rem;
-  }
-
-  .user-form {
-    flex-direction: column;
-  }
-
-  .activities-header h1 {
-    font-size: 2rem;
-  }
-
-  /* Login Card Responsive */
-  .login-card {
-    margin: 0 1rem 2rem;
-  }
-
-  .login-header {
-    padding: 2rem 1.5rem;
-  }
-
-  .login-header h2 {
-    font-size: 1.5rem;
-  }
-
-  .strava-icon {
-    font-size: 3rem;
-  }
-
-  /* User Info Card Responsive */
-  .user-info-header {
-    flex-direction: column;
-    text-align: center;
-    padding: 1.5rem;
-  }
-
-  .user-details h3 {
-    font-size: 1.4rem;
-  }
-
-  .user-actions {
-    width: 100%;
-    flex-direction: column;
-  }
-
-  .change-user-btn,
-  .logout-btn {
-    width: 100%;
-  }
-
-  .change-user-form {
-    flex-direction: column;
-  }
-
-  .apply-user-btn,
-  .cancel-user-btn {
-    width: 100%;
-  }
-
-  /* Hacer la tabla responsive */
-  .table-container {
-    overflow-x: auto;
-  }
-
-  .activities-table {
-    min-width: 800px;
-  }
-
-  .activities-table th,
-  .activities-table td {
-    padding: 0.8rem 0.5rem;
-    font-size: 0.85rem;
-  }
-
-  .view-details-btn {
-    padding: 0.5rem 1rem;
-    font-size: 0.85rem;
-  }
-}
-
 /* User Info Card - Simplificada para usuario autenticado */
 .user-info-card-simple {
   background: white;
@@ -681,4 +600,65 @@
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(252, 82, 0, 0.1);
 }
+
+@media (max-width: 768px) {
+  .activities-page {
+    padding: 1rem;
+  }
+
+  .activities-header h1 {
+    font-size: 1.4rem;
+  }
+
+  .user-info-card-simple {
+    overflow: hidden;
+    padding: 1rem;
+  }
+
+  .user-status {
+    font-size: 0.75rem;
+    word-break: break-all;
+  }
+
+  .user-details h3 {
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+  }
+
+  .filter-section-inline {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .filter-section-inline .filter-select {
+    min-width: unset;
+    width: 100%;
+  }
+
+  .activities-stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+
+  .stat-card {
+    padding: 1rem;
+  }
+
+  .stat-card h3 {
+    font-size: 1.5rem;
+  }
+
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .activities-table {
+    min-width: 600px;
+  }
+}
+
 

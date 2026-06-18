@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { getActivityDetail, addToAnalyzed, removeFromAnalyzedByActivity, checkIfAnalyzed } from '../utils/apiCalls'
 import { MapContainer, TileLayer, Polyline, Marker, Popup } from 'react-leaflet'
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import MLDashboard from '../components/MLDashboard'
-import GaugeChart from 'react-gauge-chart'
+import SpeedGauge from '../components/SpeedGauge'
 import 'leaflet/dist/leaflet.css'
 import '../styles/ActivityDetail.css'
 import polyline from '@mapbox/polyline'
@@ -20,13 +20,24 @@ function ActivityDetail() {
   const [error, setError] = useState(null)
   const [showPerformanceModal, setShowPerformanceModal] = useState(false)
   const [hoveredPoint, setHoveredPoint] = useState(null)
-  const [currentSpeed, setCurrentSpeed] = useState(0)
   const [isAnalyzed, setIsAnalyzed] = useState(false)
   const [analyzingLoading, setAnalyzingLoading] = useState(false)
   const [streams, setStreams] = useState(null)
-  const [displaySpeed, setDisplaySpeed] = useState(0)
+  const gaugeRef = useRef(null)
+  const lastMove = useRef(0)
 
+  const updateSpeed = useCallback((speed) => {
+    if (gaugeRef.current) gaugeRef.current.update(speed)
+  }, [])
 
+  const handleMouseMove = useCallback((e) => {
+    const now = Date.now()
+    if (now - lastMove.current < 30) return
+    lastMove.current = now
+    if (e && e.activePayload && e.activePayload[0]) {
+      setHoveredPoint(e.activePayload[0].payload)
+    }
+  }, [])
 
   useEffect(() => {
     fetchActivityDetail()
@@ -203,24 +214,18 @@ function ActivityDetail() {
   const handleChartHover = (data) => {
     if (data && data.activePayload && data.activePayload[0]) {
       const point = data.activePayload[0].payload
-      console.log('punto:', point)
       setHoveredPoint(point)
-      const newSpeed = parseFloat(point.velocidad)
-      console.log('🚴 Velocidad actualizada:', newSpeed, 'km/h')
-      setCurrentSpeed(newSpeed)
+      updateSpeed(parseFloat(point.velocidad))
     }
   }
 
   const handleChartLeave = () => {
-    console.log('👋 Saliendo del gráfico, velocidad media:', activity.averageSpeed * 3.6)
     setHoveredPoint(null)
-    setCurrentSpeed(activity ? activity.averageSpeed * 3.6 : 0)
+    if (activity) updateSpeed(activity.averageSpeed * 3.6)
   }
 
   useEffect(() => {
-    if (activity) {
-      setCurrentSpeed(activity.averageSpeed * 3.6)
-    }
+    if (activity) updateSpeed(activity.averageSpeed * 3.6)
   }, [activity])
 
   if (loading) {
@@ -251,7 +256,8 @@ function ActivityDetail() {
       velocidad: streams.velocity_smooth?.data[i]
         ? parseFloat((streams.velocity_smooth.data[i] * 3.6).toFixed(1))
         : 0,
-      vatios: streams.watts?.data[i] || 0
+      vatios: streams.watts?.data[i] || 0,
+      ritmo: streams.heartrate?.data[i] ? parseFloat(streams.heartrate.data[i].toFixed(0)) : null
     }))
     : generateMockData()
 
@@ -432,14 +438,7 @@ function ActivityDetail() {
           <ResponsiveContainer width="100%" height={350} style={{ overflow: 'visible' }}>
             <AreaChart
               data={chartData}
-              onMouseMove={(e) => {
-                if (e && e.activePayload && e.activePayload[0]) {
-                  const point = e.activePayload[0].payload
-                  setHoveredPoint(point)
-                  setCurrentSpeed(parseFloat(point.velocidad))
-                  setDisplaySpeed(parseFloat(point.velocidad))
-                }
-              }}
+              onMouseMove={handleMouseMove}
               onMouseLeave={handleChartLeave}
             >
               <defs>
@@ -460,8 +459,7 @@ function ActivityDetail() {
                 content={({ active, payload }) => {
                   if (active && payload && payload[0]) {
                     const data = payload[0].payload
-                    setCurrentSpeed(parseFloat(data.velocidad))
-                    setDisplaySpeed(parseFloat(data.velocidad))
+                    updateSpeed(parseFloat(data.velocidad))
                     return (
                       <div className="custom-tooltip">
                         <p><strong>Distancia:</strong> {data.distance} km</p>
@@ -470,7 +468,6 @@ function ActivityDetail() {
                       </div>
                     )
                   }
-                  setDisplaySpeed(activity ? activity.averageSpeed * 3.6 : 0)
                   return null
                 }}
               />
@@ -496,32 +493,7 @@ function ActivityDetail() {
 
         {/* Velocímetro Compacto Debajo */}
         <div className="speedometer-compact">
-          <div className="speedometer-wrapper">
-            <h4>⚡ Velocidad</h4>
-            <div className="speed-display">
-              <span className="speed-value-large" style={{ color: '#fc5200', fontSize: '2.5rem', fontWeight: 'bold' }}>
-                {currentSpeed.toFixed(1)}
-              </span>
-              <span className="speed-unit-large">km/h</span>
-            </div>
-            <svg viewBox="0 0 200 120" width="200" height="120" key={currentSpeed}>
-              <path
-                d="M 20 100 A 80 80 0 0 1 180 100"
-                fill="none"
-                stroke="#e0e0e0"
-                strokeWidth="20"
-                strokeLinecap="round"
-              />
-              <path
-                d="M 20 100 A 80 80 0 0 1 180 100"
-                fill="none"
-                stroke={currentSpeed / (activity.maxSpeed * 3.6) < 0.5 ? "#2ecc71" : currentSpeed / (activity.maxSpeed * 3.6) < 0.75 ? "#f39c12" : "#e74c3c"}
-                strokeWidth="20"
-                strokeLinecap="round"
-                strokeDasharray={`${Math.min(currentSpeed / (activity.maxSpeed * 3.6), 1) * 251.2} 251.2`}
-              />
-            </svg>
-          </div>
+          <SpeedGauge ref={gaugeRef} maxSpeed={activity.maxSpeed} />
           <div className="speed-stats-compact">
             <div className="speed-stat-compact">
               <span className="stat-label">Media</span>

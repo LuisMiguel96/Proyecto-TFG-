@@ -141,7 +141,7 @@ router.get('/streams/:userId/:stravaId', async (req, res) => {
       `https://www.strava.com/api/v3/activities/${req.params.stravaId}/streams`,
       {
         headers: { Authorization: `Bearer ${user.accessToken}` },
-        params: { keys: 'altitude,velocity_smooth,watts,distance', key_by_type: true }
+        params: { keys: 'altitude,velocity_smooth,watts,distance,heartrate,cadence', key_by_type: true }
       }
     )
 

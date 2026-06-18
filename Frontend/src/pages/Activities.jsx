@@ -92,7 +92,7 @@ function Activities() {
   }
 
   return (
-    <div className="activities-page">
+    <div className="activities-page"style={{ overflowX: 'hidden', width: '100%', boxSizing: 'border-box' }}>
       <div className="activities-header">
         <h1>Mis Actividades Deportivas</h1>
         <p>Visualiza y analiza tus entrenamientos sincronizados desde Strava</p>
@@ -118,7 +118,7 @@ function Activities() {
             </div>
             <div className="user-details">
               <h3>{user?.firstname} {user?.lastname}</h3>
-              <p className="user-status">✓ Conectado (ID: {user?.id})</p>
+              <p className="user-status">✓ Conectado (ID: {user?.id?.substring(0, 8)}...)</p>
             </div>
           </div>
 
