@@ -64,3 +64,16 @@ Required vars: `MONGODB_CLUSTER_URI`, `MONGODB_DATABASE_NAME`, `STRAVA_CLIENT_ID
 - Frontend uses ES modules (`"type": "module"` in package.json)
 - ML API uses FastAPI with plain functions (no async on data endpoints)
 - Backend routes use `var` for requires (existing style — preserve)
+
+
+##requeriments 
+fastapi==0.104.1
+uvicorn==0.24.0
+tensorflow==2.13.0
+keras==2.13.1
+scikit-learn==1.3.0
+numpy==1.24.3
+pandas==1.5.3
+pydantic==2.4.2
+python-multipart==0.0.6
+pickle5==0.0.12
