@@ -4,3 +4,6 @@ Frontend/node_modules/ML/*.csv
 ML/outputs/*.parquet
 ML/datos/*.fit
 ML/datos/*.gz
+__pycache__/
+__pycache__/
+*.pyc
