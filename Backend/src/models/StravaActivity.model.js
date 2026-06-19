@@ -31,32 +31,30 @@ const stravaActivitySchema = new mongoose.Schema({
     required: true
   },
   movingTime: {
-    type: Number, // segundos
-    required: true
+    type: Number,
   },
   elapsedTime: {
-    type: Number, // segundos
-    required: true
+    type: Number,
   },
   
   // Distancia y velocidad
   distance: {
-    type: Number, // metros
+    type: Number,
     required: true
   },
   averageSpeed: {
-    type: Number, // m/s
+    type: Number,
   },
   maxSpeed: {
-    type: Number, // m/s
+    type: Number,
   },
   
   // Elevación
   totalElevationGain: {
-    type: Number, // metros
+    type: Number,
   },
   
-  // Frecuencia cardíaca (si disponible)
+  // Frecuencia cardíaca
   averageHeartrate: {
     type: Number,
   },
@@ -69,9 +67,34 @@ const stravaActivitySchema = new mongoose.Schema({
     type: Number,
   },
   
+  // Potencia (vatios)
+  averageWatts: {
+    type: Number,
+  },
+  weightedAverageWatts: {
+    type: Number,
+  },
+  maxWatts: {
+    type: Number,
+  },
+  kilojoules: {
+    type: Number,
+  },
+  
+  // Cadencia
+  averageCadence: {
+    type: Number,
+  },
+  
+  // Dispositivo con potenciómetro
+  deviceWatts: {
+    type: Boolean,
+    default: false
+  },
+  
   // Ubicación
   startLatlng: {
-    type: [Number], // [lat, lng]
+    type: [Number],
   },
   endLatlng: {
     type: [Number],
@@ -79,7 +102,7 @@ const stravaActivitySchema = new mongoose.Schema({
   
   // Mapa
   mapPolyline: {
-    type: String, // Polyline encoded
+    type: String,
   }
   
 }, {
