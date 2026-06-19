@@ -1,12 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { getActivityDetail, addToAnalyzed, removeFromAnalyzedByActivity, checkIfAnalyzed } from '../utils/apiCalls'
 import { MapContainer, TileLayer, Polyline, Marker, Popup } from 'react-leaflet'
-import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-import GaugeChart from 'react-gauge-chart'
+import { LineChart, Line, AreaChart, Area, BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine, ResponsiveContainer } from 'recharts'
+import MLDashboard from '../components/MLDashboard'
+import SpeedGauge from '../components/SpeedGauge'
 import 'leaflet/dist/leaflet.css'
 import '../styles/ActivityDetail.css'
+import polyline from '@mapbox/polyline'
+import axios from 'axios'
 
 function ActivityDetail() {
   const { id } = useParams()
@@ -17,14 +20,51 @@ function ActivityDetail() {
   const [error, setError] = useState(null)
   const [showPerformanceModal, setShowPerformanceModal] = useState(false)
   const [hoveredPoint, setHoveredPoint] = useState(null)
-  const [currentSpeed, setCurrentSpeed] = useState(0)
   const [isAnalyzed, setIsAnalyzed] = useState(false)
   const [analyzingLoading, setAnalyzingLoading] = useState(false)
+  const [streams, setStreams] = useState(null)
+  const gaugeRef = useRef(null)
+  const lastMove = useRef(0)
+
+  const updateSpeed = useCallback((speed) => {
+    if (gaugeRef.current) gaugeRef.current.update(speed)
+  }, [])
+
+  const handleMouseMove = useCallback((e) => {
+    const now = Date.now()
+    if (now - lastMove.current < 30) return
+    lastMove.current = now
+    if (e && e.activePayload && e.activePayload[0]) {
+      setHoveredPoint(e.activePayload[0].payload)
+    }
+  }, [])
 
   useEffect(() => {
     fetchActivityDetail()
     checkIfAnalyzedStatus()
   }, [id])
+
+  const streamsLoaded = useRef(false)
+
+  const fetchStreams = async (stravaId) => {
+    if (streamsLoaded.current) return
+    streamsLoaded.current = true
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/api/strava/streams/${user.id}/${stravaId}`
+      )
+      console.log('STREAMS:', response.data)
+      setStreams(response.data)
+    } catch (err) {
+      console.error('Error cargando streams:', err)
+    }
+  }
+
+  useEffect(() => {
+    if (activity?.stravaId) {
+      fetchStreams(activity.stravaId)
+    }
+  }, [activity?.stravaId])
 
   const fetchActivityDetail = async () => {
     try {
@@ -40,7 +80,7 @@ function ActivityDetail() {
 
   const checkIfAnalyzedStatus = async () => {
     if (!user || !user.id) return
-    
+
     try {
       const data = await checkIfAnalyzed(user.id, id)
       setIsAnalyzed(data.isAnalyzed)
@@ -82,9 +122,9 @@ function ActivityDetail() {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString)
-    return date.toLocaleDateString('es-ES', { 
-      year: 'numeric', 
-      month: 'long', 
+    return date.toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
@@ -130,32 +170,32 @@ function ActivityDetail() {
   // Datos simulados para gráficos (en producción vendrían del stream de datos de Strava)
   const generateMockData = () => {
     if (!activity) return []
-    
+
     const points = 100 // Más puntos para mejor interactividad
     const data = []
     const distance = activity.distance / 1000
     const avgSpeed = activity.averageSpeed * 3.6
     const maxElevation = activity.totalElevationGain || 100
-    
+
     for (let i = 0; i <= points; i++) {
       const distancePoint = (distance / points) * i
       const progress = i / points
-      
+
       // Variación de velocidad más realista
       const speedVariation = Math.sin(progress * Math.PI * 3) * 8 + (Math.random() - 0.5) * 4
       const speed = Math.max(5, Math.min(avgSpeed * 1.5, avgSpeed + speedVariation))
-      
+
       // Perfil de elevación más realista
       const elevationBase = Math.sin(progress * Math.PI * 2) * (maxElevation / 2)
       const elevationNoise = Math.sin(progress * Math.PI * 10) * (maxElevation / 10)
       const elevation = Math.max(0, elevationBase + elevationNoise + (maxElevation / 2))
-      
+
       // Generar coordenadas simuladas para el mapa (en producción vendrían de la API)
       const baseLat = 40.4168 // Madrid como ejemplo
       const baseLon = -3.7038
       const lat = baseLat + (progress * 0.05) + (Math.random() - 0.5) * 0.01
       const lon = baseLon + (progress * 0.05) + (Math.random() - 0.5) * 0.01
-      
+
       data.push({
         index: i,
         distance: distancePoint.toFixed(2),
@@ -166,37 +206,27 @@ function ActivityDetail() {
         lon
       })
     }
-    
+
     return data
   }
 
-  const chartData = generateMockData()
-  
-  // Extraer coordenadas para el mapa
-  const routeCoordinates = chartData.map(point => [point.lat, point.lon])
-  const centerPosition = routeCoordinates.length > 0 ? routeCoordinates[Math.floor(routeCoordinates.length / 2)] : [40.4168, -3.7038]
 
   // Manejar hover sobre el perfil de elevación
   const handleChartHover = (data) => {
     if (data && data.activePayload && data.activePayload[0]) {
       const point = data.activePayload[0].payload
       setHoveredPoint(point)
-      const newSpeed = parseFloat(point.velocidad)
-      console.log('🚴 Velocidad actualizada:', newSpeed, 'km/h')
-      setCurrentSpeed(newSpeed)
+      updateSpeed(parseFloat(point.velocidad))
     }
   }
 
   const handleChartLeave = () => {
-    console.log('👋 Saliendo del gráfico, velocidad media:', activity.averageSpeed * 3.6)
     setHoveredPoint(null)
-    setCurrentSpeed(activity ? activity.averageSpeed * 3.6 : 0)
+    if (activity) updateSpeed(activity.averageSpeed * 3.6)
   }
 
   useEffect(() => {
-    if (activity) {
-      setCurrentSpeed(activity.averageSpeed * 3.6)
-    }
+    if (activity) updateSpeed(activity.averageSpeed * 3.6)
   }, [activity])
 
   if (loading) {
@@ -219,8 +249,71 @@ function ActivityDetail() {
       </div>
     )
   }
-
   if (!activity) return null
+
+  const FTP = 250
+  const Peso = 75
+
+  const chartData = streams?.distance
+    ? streams.distance.data.map((dist, i) => {
+      const vatios = streams.watts?.data[i] || 0
+      const cadencia = streams.cadence?.data[i] || 0
+      const fuerza = cadencia > 0 ? parseFloat((vatios / (cadencia * 2 * Math.PI / 60)).toFixed(1)) : 0
+      return {
+        distance: parseFloat((dist / 1000).toFixed(2)),
+        elevacion: parseFloat(streams.altitude?.data[i]?.toFixed(0) || 0),
+        velocidad: streams.velocity_smooth?.data[i]
+          ? parseFloat((streams.velocity_smooth.data[i] * 3.6).toFixed(1)) : 0,
+        vatios,
+        cadencia,
+        fuerza,
+        ritmo: streams.heartrate?.data[i] ? parseFloat(streams.heartrate.data[i].toFixed(0)) : null
+      }
+    })
+    : generateMockData()
+
+  const zonasData = streams?.watts
+    ? (() => {
+      const zonas = [
+        { zona: 'Z1 Recuperación', min: 0, max: FTP * 0.55, color: '#94a3b8' },
+        { zona: 'Z2 Resistencia', min: FTP * 0.55, max: FTP * 0.75, color: '#22c55e' },
+        { zona: 'Z3 Tempo', min: FTP * 0.75, max: FTP * 0.90, color: '#f59e0b' },
+        { zona: 'Z4 Umbral', min: FTP * 0.90, max: FTP * 1.05, color: '#f97316' },
+        { zona: 'Z5 VO2max', min: FTP * 1.05, max: Infinity, color: '#ef4444' },
+      ]
+      const total = streams.watts.data.length
+      return zonas.map(z => ({
+        zona: z.zona,
+        porcentaje: parseFloat(
+          (streams.watts.data.filter(w => w >= z.min && w < z.max).length / total * 100).toFixed(1)
+        ),
+        color: z.color
+      }))
+    })()
+    : []
+
+  const fatigaData = chartData.map((p, i) => ({
+    ...p,
+    fatiga: parseFloat((chartData.slice(0, i + 1).reduce((s, x) => s + x.vatios, 0) / ((i + 1) * FTP) * 100).toFixed(1))
+  }))
+
+  // Reducir puntos para legibilidad
+  const sampleData = (data, maxPoints = 300) => {
+    if (data.length <= maxPoints) return data
+    const step = Math.floor(data.length / maxPoints)
+    return data.filter((_, i) => i % step === 0)
+  }
+
+  const chartDataSampled = sampleData(chartData, 200)
+  const fatigaDataSampled = sampleData(fatigaData, 300)
+
+  const routeCoordinates = activity.mapPolyline
+    ? polyline.decode(activity.mapPolyline)
+    : []
+
+  const centerPosition = routeCoordinates.length > 0
+    ? routeCoordinates[Math.floor(routeCoordinates.length / 2)]
+    : [40.4168, -3.7038]
 
   return (
     <div className="activity-detail-page">
@@ -229,8 +322,8 @@ function ActivityDetail() {
           <button onClick={() => navigate('/activities')} className="back-button">
             ← Volver
           </button>
-          
-          <button 
+
+          <button
             onClick={handleToggleAnalyzed}
             disabled={analyzingLoading}
             className={isAnalyzed ? 'analyzed-button active' : 'analyzed-button'}
@@ -287,6 +380,51 @@ function ActivityDetail() {
             </div>
           </div>
         )}
+        {activity.averageWatts && (
+          <div className="metric-card-large">
+            <span className="metric-icon">⚡</span>
+            <div>
+              <h3>{Math.round(activity.averageWatts)} W</h3>
+              <p>Vatios Medios</p>
+            </div>
+          </div>
+        )}
+        {activity.weightedAverageWatts && (
+          <div className="metric-card-large">
+            <span className="metric-icon">💪</span>
+            <div>
+              <h3>{Math.round(activity.weightedAverageWatts)} W</h3>
+              <p>Vatios Normalizados</p>
+            </div>
+          </div>
+        )}
+        {activity.maxWatts && (
+          <div className="metric-card-large">
+            <span className="metric-icon">🚀</span>
+            <div>
+              <h3>{activity.maxWatts} W</h3>
+              <p>Vatios Máximos</p>
+            </div>
+          </div>
+        )}
+        {activity.kilojoules && (
+          <div className="metric-card-large">
+            <span className="metric-icon">🔋</span>
+            <div>
+              <h3>{Math.round(activity.kilojoules)} kJ</h3>
+              <p>Energía Total</p>
+            </div>
+          </div>
+        )}
+        {activity.averageCadence && (
+          <div className="metric-card-large">
+            <span className="metric-icon">🔄</span>
+            <div>
+              <h3>{Math.round(activity.averageCadence)} rpm</h3>
+              <p>Cadencia Media</p>
+            </div>
+          </div>
+        )}
         {activity.type === 'Run' && (
           <div className="metric-card-large">
             <span className="metric-icon">🎯</span>
@@ -302,9 +440,9 @@ function ActivityDetail() {
       <div className="map-container">
         <h2>🗺️ Mapa de la ruta</h2>
         <div className="map-wrapper">
-          <MapContainer 
-            center={centerPosition} 
-            zoom={13} 
+          <MapContainer
+            center={centerPosition}
+            zoom={13}
             style={{ height: '100%', width: '100%', borderRadius: '10px' }}
           >
             <TileLayer
@@ -325,8 +463,8 @@ function ActivityDetail() {
             {hoveredPoint && (
               <Marker position={[hoveredPoint.lat, hoveredPoint.lon]}>
                 <Popup>
-                  📍 Km {hoveredPoint.distance}<br/>
-                  ⚡ {hoveredPoint.velocidad} km/h<br/>
+                  📍 Km {hoveredPoint.distance}<br />
+                  ⚡ {hoveredPoint.velocidad} km/h<br />
                   ⛰️ {hoveredPoint.elevacion} m
                 </Popup>
               </Marker>
@@ -339,34 +477,35 @@ function ActivityDetail() {
       <div className="interactive-section">
         <h2>📊 Análisis Interactivo de la Ruta</h2>
         <p className="interactive-hint">💡 Pasa el cursor sobre el perfil de elevación para ver la velocidad en cada punto</p>
-        
+
         {/* Perfil de Elevación Interactivo - Ancho Completo */}
         <div className="elevation-profile-full">
           <h3>⛰️ Perfil de Elevación</h3>
-          <ResponsiveContainer width="100%" height={350}>
-            <AreaChart 
+          <ResponsiveContainer width="100%" height={350} style={{ overflow: 'visible' }}>
+            <AreaChart
               data={chartData}
-              onMouseMove={handleChartHover}
+              onMouseMove={handleMouseMove}
               onMouseLeave={handleChartLeave}
             >
               <defs>
                 <linearGradient id="colorElevation" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#fc5200" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#fc5200" stopOpacity={0.1}/>
+                  <stop offset="5%" stopColor="#fc5200" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="#fc5200" stopOpacity={0.1} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="distance" 
-                label={{ value: 'Distancia (km)', position: 'insideBottom', offset: -5 }} 
+              <XAxis
+                dataKey="distance"
+                label={{ value: 'Distancia (km)', position: 'insideBottom', offset: -5 }}
               />
-              <YAxis 
-                label={{ value: 'Elevación (m)', angle: -90, position: 'insideLeft' }} 
+              <YAxis
+                label={{ value: 'Elevación (m)', angle: -90, position: 'insideLeft' }}
               />
-              <Tooltip 
+              <Tooltip
                 content={({ active, payload }) => {
                   if (active && payload && payload[0]) {
                     const data = payload[0].payload
+                    updateSpeed(parseFloat(data.velocidad))
                     return (
                       <div className="custom-tooltip">
                         <p><strong>Distancia:</strong> {data.distance} km</p>
@@ -378,16 +517,17 @@ function ActivityDetail() {
                   return null
                 }}
               />
-              <Area 
-                type="monotone" 
-                dataKey="elevacion" 
-                stroke="#fc5200" 
+              <Area
+                type="monotone"
+                dataKey="elevacion"
+                stroke="#fc5200"
                 strokeWidth={2}
-                fill="url(#colorElevation)" 
+                fill="url(#colorElevation)"
+
               />
             </AreaChart>
           </ResponsiveContainer>
-          
+
           {hoveredPoint && (
             <div className="hovered-info-inline">
               <span>📍 {hoveredPoint.distance} km</span>
@@ -399,29 +539,7 @@ function ActivityDetail() {
 
         {/* Velocímetro Compacto Debajo */}
         <div className="speedometer-compact">
-          <div className="speedometer-wrapper">
-            <h4>⚡ Velocidad</h4>
-            <div className="speed-display">
-              <span className="speed-value-large">{currentSpeed.toFixed(1)}</span>
-              <span className="speed-unit-large">km/h</span>
-            </div>
-            <div className="gauge-small">
-              <GaugeChart 
-                id="speed-gauge"
-                key={currentSpeed}
-                nrOfLevels={1}
-                colors={["#e0e0e0", "#fc5200"]}
-                arcWidth={0.25}
-                percent={Math.min(currentSpeed / (activity.maxSpeed * 3.6 * 1.2), 1)}
-                textColor="transparent"
-                hideText={true}
-                animate={false}
-                arcsLength={[1]}
-                needleColor="transparent"
-                needleBaseColor="transparent"
-              />
-            </div>
-          </div>
+          <SpeedGauge ref={gaugeRef} maxSpeed={activity.maxSpeed} />
           <div className="speed-stats-compact">
             <div className="speed-stat-compact">
               <span className="stat-label">Media</span>
@@ -439,7 +557,7 @@ function ActivityDetail() {
       <div className="chart-container">
         <h2>📊 Velocidad a lo largo de la ruta</h2>
         <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={chartData}>
+          <LineChart data={chartDataSampled}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="distance" label={{ value: 'Distancia (km)', position: 'insideBottom', offset: -5 }} />
             <YAxis label={{ value: 'Velocidad (km/h)', angle: -90, position: 'insideLeft' }} />
@@ -450,108 +568,98 @@ function ActivityDetail() {
         </ResponsiveContainer>
       </div>
 
-      {/* Gráfico de Ritmo Cardíaco */}
+      {/* Vatios a lo largo de la ruta */}
       <div className="chart-container">
-        <h2>❤️ Ritmo cardíaco</h2>
-        
-        {activity.averageHeartrate ? (
-          <>
-            <div className="heartrate-stats">
-              <div className="hr-stat">
-                <span>Media:</span>
-                <strong>{activity.averageHeartrate} bpm</strong>
-              </div>
-              {activity.maxHeartrate && (
-                <div className="hr-stat">
-                  <span>Máxima:</span>
-                  <strong>{activity.maxHeartrate} bpm</strong>
-                </div>
-              )}
-            </div>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="distance" label={{ value: 'Distancia (km)', position: 'insideBottom', offset: -5 }} />
-                <YAxis label={{ value: 'BPM', angle: -90, position: 'insideLeft' }} />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="ritmo" stroke="#e74c3c" strokeWidth={2} name="Ritmo Cardíaco (bpm)" />
-              </LineChart>
-            </ResponsiveContainer>
-          </>
-        ) : (
-          <div className="no-data-message">
-            <p>📊 No hay datos de ritmo cardíaco para esta actividad</p>
-            <p className="hint">💡 Usa un monitor de frecuencia cardíaca conectado a Strava para ver estos datos</p>
-          </div>
-        )}
-      </div>
-
-      {/* Información adicional */}
-      <div className="additional-info">
-        <h2>ℹ️ Información adicional</h2>
-        <div className="info-grid">
-          <div className="info-item">
-            <span className="info-label">Tiempo Total:</span>
-            <span className="info-value">{formatTime(activity.elapsedTime)}</span>
-          </div>
-          <div className="info-item">
-            <span className="info-label">Tiempo en Movimiento:</span>
-            <span className="info-value">{formatTime(activity.movingTime)}</span>
-          </div>
-          {activity.calories && (
-            <div className="info-item">
-              <span className="info-label">Calorías:</span>
-              <span className="info-value">{activity.calories} kcal</span>
-            </div>
-          )}
-          <div className="info-item">
-            <span className="info-label">ID de Strava:</span>
-            <span className="info-value">{activity.stravaId}</span>
-          </div>
+        <h2>⚡ Potencia a lo largo de la ruta</h2>
+        <div className="heartrate-stats">
+          <div className="hr-stat"><span>Media:</span><strong>{activity.averageWatts ? Math.round(activity.averageWatts) : Math.round(chartData.reduce((s, p) => s + p.vatios, 0) / chartData.length)} W</strong></div>
+          <div className="hr-stat"><span>Máx:</span><strong>{Math.max(...chartData.map(p => p.vatios))} W</strong></div>
+          <div className="hr-stat"><span>FTP ref.:</span><strong>{FTP} W</strong></div>
         </div>
+        <ResponsiveContainer width="100%" height={300}>
+          <AreaChart data={chartDataSampled}>
+            <defs>
+              <linearGradient id="vatiosGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.1} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="distance" label={{ value: 'Distancia (km)', position: 'insideBottom', offset: -5 }} />
+            <YAxis label={{ value: 'Vatios (W)', angle: -90, position: 'insideLeft' }} />
+            <Tooltip formatter={(v) => [`${v}W`, 'Potencia']} />
+            <ReferenceLine y={FTP} stroke="#020d2eff" strokeDasharray="5 5" />
+            <Area type="monotone" dataKey="vatios" stroke="#f59e0b" strokeWidth={2} fill="url(#vatiosGrad)" name="Vatios" />
+          </AreaChart>
+        </ResponsiveContainer>
       </div>
 
-      {/* Botón de Análisis de Rendimiento */}
-      <div className="performance-section">
-        <button 
-          className="performance-button"
-          onClick={() => setShowPerformanceModal(true)}
-        >
-          🎯 Aplicar Nuevo Rendimiento
-        </button>
+      {/* Zonas de potencia */}
+      <div className="chart-container">
+        <h2>🏋️ Distribución por zonas de potencia</h2>
+        <ResponsiveContainer width="100%" height={280}>
+          <BarChart data={zonasData} layout="vertical" margin={{ left: 20 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis type="number" unit="%" domain={[0, 100]} />
+            <YAxis type="category" dataKey="zona" width={120} tick={{ fontSize: 11 }} />
+            <Tooltip formatter={(v) => [`${v}%`, 'Tiempo']} />
+            <Bar dataKey="porcentaje" radius={[0, 6, 6, 0]}>
+              {zonasData.map((z, i) => (
+                <Cell key={i} fill={z.color} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
       </div>
 
+      {/* Cadencia y Fuerza */}
+      <div className="chart-container">
+        <h2>🔄 Cadencia y Fuerza</h2>
+        <div className="heartrate-stats">
+          <div className="hr-stat"><span>Cadencia media:</span><strong>{Math.round(chartData.reduce((s, p) => s + p.cadencia, 0) / chartData.length)} rpm</strong></div>
+          <div className="hr-stat"><span>Fuerza media:</span><strong>{Math.round(chartData.filter(p => p.fuerza > 0).reduce((s, p) => s + p.fuerza, 0) / chartData.filter(p => p.fuerza > 0).length)} Nm</strong></div>
+        </div>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={chartData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="distance" label={{ value: 'Distancia (km)', position: 'insideBottom', offset: -5 }} />
+            <YAxis yAxisId="cad" label={{ value: 'rpm', angle: -90, position: 'insideLeft' }} />
+            <YAxis yAxisId="fuerza" orientation="right" label={{ value: 'Nm', angle: 90, position: 'insideRight' }} />
+            <Tooltip />
+            <Legend />
+            <Line yAxisId="cad" type="monotone" dataKey="cadencia" stroke="#8b5cf6" strokeWidth={2} name="Cadencia (rpm)" dot={false} />
+            <Line yAxisId="fuerza" type="monotone" dataKey="fuerza" stroke="#f59e0b" strokeWidth={2} name="Fuerza (Nm)" dot={false} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Fatiga acumulada */}
+      <div className="chart-container">
+        <h2>😓 Fatiga acumulada</h2>
+        <p style={{ color: '#6b7280', fontSize: '0.9rem', marginBottom: '1rem' }}>
+          Porcentaje de esfuerzo acumulado respecto al FTP de referencia ({FTP}W)
+        </p>
+        <ResponsiveContainer width="100%" height={300}>
+          <AreaChart data={fatigaData}>
+            <defs>
+              <linearGradient id="fatigaGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="distance" label={{ value: 'Distancia (km)', position: 'insideBottom', offset: -5 }} />
+            <YAxis label={{ value: 'Fatiga (%)', angle: -90, position: 'insideLeft' }} />
+            <Tooltip formatter={(v) => [`${v}%`, 'Fatiga']} />
+            <Area type="monotone" dataKey="fatiga" stroke="#ef4444" strokeWidth={2} fill="url(#fatigaGrad)" name="Fatiga" />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
       {/* Modal de Rendimiento */}
-      {showPerformanceModal && (
-        <div className="modal-overlay" onClick={() => setShowPerformanceModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2>🎯 Análisis de Rendimiento</h2>
-            <p>Aquí podrás aplicar análisis avanzados a tu actividad:</p>
-            <ul>
-              <li>Comparar con actividades similares</li>
-              <li>Establecer objetivos de mejora</li>
-              <li>Análisis de zonas de potencia/frecuencia cardíaca</li>
-              <li>Recomendaciones personalizadas</li>
-            </ul>
-            <div className="modal-stats">
-              <div className="modal-stat">
-                <span>Eficiencia:</span>
-                <strong>{((activity.distance / activity.movingTime) * 100).toFixed(1)}%</strong>
-              </div>
-              <div className="modal-stat">
-                <span>Intensidad:</span>
-                <strong>{activity.averageSpeed > 5 ? 'Alta' : activity.averageSpeed > 3 ? 'Media' : 'Baja'}</strong>
-              </div>
-            </div>
-            <button onClick={() => setShowPerformanceModal(false)} className="close-modal-button">
-              Cerrar
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
+
+    </div >
   )
 }
+
 
 export default ActivityDetail

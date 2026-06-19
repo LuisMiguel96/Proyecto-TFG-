@@ -111,3 +111,30 @@ export const checkIfAnalyzed = async (userId, activityId) => {
         throw error;
     }
 };
+// ========== ML API CALLS ==========
+export const getMLEstadisticasGlobales = async () => {
+    try {
+        const response = await api.get('/ml/estadisticas/globales');
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const getMLEstadisticasZonas = async () => {
+    try {
+        const response = await api.get('/ml/estadisticas/zonas');
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const getMLActividades = async () => {
+    try {
+        const response = await api.get('/ml/actividades');
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};

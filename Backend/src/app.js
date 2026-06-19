@@ -16,7 +16,7 @@ var app = express();
 
 // Configuración de CORS
 app.use(cors({
-  origin: 'http://localhost:5177', // Puerto del frontend
+  origin: 'http://localhost:5173', // Puerto del frontend
   credentials: true
 }));
 
