@@ -4,6 +4,7 @@ import VAMChart from './VAMChart'
 import MLComparisonChart from './MLComparisonChart'
 
 export default function SegmentCard({ segment, index, total, theme, expanded, onClick, predData, onZoom, terrainType }) {
+    if (!segment) return null
     const pts = segment.points
     const avgWatts = (pts.reduce((s, p) => s + p.watts, 0) / pts.length).toFixed(0)
     const avgSpeed = (pts.reduce((s, p) => s + p.velocity, 0) / pts.length).toFixed(1)
@@ -21,6 +22,7 @@ export default function SegmentCard({ segment, index, total, theme, expanded, on
     const mejoraPct = avgOptimo
         ? ((parseFloat(avgOptimo) - parseFloat(avgWatts)) / parseFloat(avgWatts) * 100).toFixed(1)
         : null
+
     return (
         <div
             onClick={onClick}
@@ -28,17 +30,18 @@ export default function SegmentCard({ segment, index, total, theme, expanded, on
                 background: 'white',
                 borderRadius: '16px',
                 padding: expanded ? '28px' : '20px',
-                border: `2px solid ${expanded ? theme.accent : theme.border}`,
-                boxShadow: expanded ? `0 8px 32px rgba(0,0,0,0.12)` : '0 4px 16px rgba(0,0,0,0.06)',
+                border: `2px solid ${expanded ? '#FC5200' : '#e5e7eb'}`,
+                boxShadow: expanded ? '0 8px 32px rgba(0,0,0,0.12)' : '0 4px 16px rgba(0,0,0,0.06)',
                 width: '100%',
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
                 transform: expanded ? 'scale(1.01)' : 'scale(1)',
             }}
         >
+            {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                 <div>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: theme.text, background: theme.bg, padding: '3px 10px', borderRadius: '20px' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#FC5200', background: theme.bg, padding: '3px 10px', borderRadius: '20px' }}>
                         Tramo {index + 1} de {total}
                     </span>
                     <div style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px' }}>
@@ -48,34 +51,44 @@ export default function SegmentCard({ segment, index, total, theme, expanded, on
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div style={{ textAlign: 'right' }}>
                         <div style={{ fontSize: '12px', color: '#6b7280' }}>Pendiente media</div>
-                        <div style={{ fontSize: '20px', fontWeight: 800, color: theme.accent }}>{avgSlope}%</div>
+                        <div style={{ fontSize: '20px', fontWeight: 800, color: '#FC5200' }}>{avgSlope}%</div>
                     </div>
-                    <span style={{ fontSize: '18px', color: theme.accent }}>{expanded ? '▲' : '▼'}</span>
-                    <button onClick={(e) => { e.stopPropagation(); onZoom(segment) }} style={{
-                        background: theme.bg, border: `1px solid ${theme.border}`,
-                        borderRadius: '8px', padding: '4px 10px',
-                        fontSize: '14px', cursor: 'pointer', color: theme.text
-                    }}
+                    <span style={{ fontSize: '18px', color: '#475569' }}>{expanded ? '▲' : '▼'}</span>
+                    <button
+                        onClick={(e) => { e.stopPropagation(); onZoom(segment) }}
+                        style={{
+                            background: 'white',
+                            border: '1px solid #FC5200',
+                            borderRadius: '8px',
+                            padding: '4px 10px',
+                            fontSize: '13px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            color: '#FC5200',
+                        }}
                     >
-                        🔍 Ver
+                        Ver
                     </button>
                 </div>
             </div>
 
+            {/* Gráfico */}
             <SegmentChart points={pts} accentColor={theme.accent} height={expanded ? 280 : 160} />
 
+            {/* Leyenda */}
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', margin: '8px 0 16px', fontSize: '11px', color: '#6b7280' }}>
                 <span><span style={{ color: theme.accent }}>●</span> Elevación</span>
                 <span><span style={{ color: '#f59e0b' }}>●</span> Vatios</span>
                 <span><span style={{ color: '#8b5cf6' }}>●</span> Velocidad</span>
             </div>
 
+            {/* Métricas */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
                 {[
                     { label: 'Vatios medios', value: `${avgWatts}W`, color: '#f59e0b' },
                     { label: 'Vel. media', value: `${avgSpeed} km/h`, color: '#8b5cf6' },
-                    { label: 'Vatios máx', value: `${maxWatts}W`, color: '#ef4444' },
-                    { label: 'Desnivel', value: `${desnivel > 0 ? '+' : ''}${desnivel}m`, color: theme.accent },
+                    { label: 'Vatios máx', value: `${maxWatts}W`, color: '#FC5200' },
+                    { label: 'Desnivel', value: `${desnivel > 0 ? '+' : ''}${desnivel}m`, color: '#6b7280' },
                 ].map(({ label, value, color }) => (
                     <div key={label} style={{ background: expanded ? theme.bg : '#f9fafb', borderRadius: '10px', padding: '10px', textAlign: 'center', transition: 'background 0.3s' }}>
                         <div style={{ fontSize: expanded ? '20px' : '16px', fontWeight: 800, color, transition: 'font-size 0.3s' }}>{value}</div>
@@ -83,39 +96,53 @@ export default function SegmentCard({ segment, index, total, theme, expanded, on
                     </div>
                 ))}
             </div>
+
+            {/* Análisis de Potencia */}
             {avgOptimo && (
-                <div style={{ marginTop: '12px',background: Math.abs(parseFloat(diferencia)) <= 5 ? '#f0fdf4' :parseFloat(diferencia) > 5 ? '#fff7ed' : '#fefce8'}}>
-                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#374151', marginBottom: '8px' }}>🤖 Análisis ML</div>
+                <div style={{ marginTop: '12px', background: '#f8faff', borderRadius: '10px', padding: '12px', border: '1px solid #e0e7ff' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>
+                        Análisis de Potencia
+                    </div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                         <div style={{ textAlign: 'center' }}>
                             <div style={{ fontSize: '16px', fontWeight: 800, color: '#3b82f6' }}>{avgWatts}W</div>
-                            <div style={{ fontSize: '10px', color: '#9ca3af' }}>Tu media</div>
+                            <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '2px' }}>Tu media</div>
                         </div>
                         <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '16px', fontWeight: 800, color: '#ef4444' }}>{avgOptimo}W</div>
-                            <div style={{ fontSize: '10px', color: '#9ca3af' }}>Óptimo modelo</div>
+                            <div style={{ fontSize: '16px', fontWeight: 800, color: '#FC5200' }}>{avgOptimo}W</div>
+                            <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Óptimo modelo</div>
                         </div>
                         <div style={{ textAlign: 'center' }}>
                             <div style={{ fontSize: '16px', fontWeight: 800, color: parseFloat(diferencia) > 0 ? '#f59e0b' : '#22c55e' }}>
                                 {parseFloat(diferencia) > 0 ? '+' : ''}{diferencia}W
                             </div>
-                            <div style={{ fontSize: '10px', color: '#9ca3af' }}>
-                                {parseFloat(mejoraPct) > 0 ? '⬆️ Puedes mejorar' : '✅ Óptimo'}
+                            <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                {parseFloat(mejoraPct) > 0 ? 'Margen de mejora' : 'Rendimiento óptimo'}
                             </div>
                         </div>
                     </div>
-                    {parseFloat(mejoraPct) > 5 && (
-                        <div style={{ marginTop: '8px', fontSize: '12px', color: '#92400e', background: '#fef3c7', padding: '8px', borderRadius: '8px', textAlign: 'center' }}>
-                            💡 Podrías aumentar tu potencia un <strong>{mejoraPct}%</strong> en este tramo
-                        </div>
-                    )}
-                    {parseFloat(mejoraPct) < -5 && (
-                        <div style={{ marginTop: '8px', fontSize: '12px', color: '#065f46', background: '#d1fae5', padding: '8px', borderRadius: '8px', textAlign: 'center' }}>
-                            ⚠️ Estás sobresforzándote un <strong>{Math.abs(mejoraPct)}%</strong> — ahorra energía
+                    {Math.abs(parseFloat(mejoraPct)) > 5 && (
+                        <div style={{
+                            marginTop: '10px',
+                            fontSize: '12px',
+                            fontWeight: 500,
+                            color: parseFloat(mejoraPct) > 0 ? '#92400e' : '#065f46',
+                            background: parseFloat(mejoraPct) > 0 ? '#fef3c7' : '#d1fae5',
+                            border: `1px solid ${parseFloat(mejoraPct) > 0 ? '#fde68a' : '#a7f3d0'}`,
+                            padding: '8px 12px',
+                            borderRadius: '8px',
+                            textAlign: 'center'
+                        }}>
+                            {parseFloat(mejoraPct) > 0
+                                ? `Podrías aumentar tu potencia un ${mejoraPct}% en este tramo`
+                                : `Estás sobresforzándote un ${Math.abs(mejoraPct)}% — reduce la intensidad`
+                            }
                         </div>
                     )}
                 </div>
             )}
+
+            {/* Charts */}
             {segPred.length > 0 && (
                 <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     <div style={{ background: '#f9fafb', borderRadius: '12px', padding: '12px' }}>
@@ -131,11 +158,6 @@ export default function SegmentCard({ segment, index, total, theme, expanded, on
                     )}
                 </div>
             )}
-            <div style={{ marginTop: '10px', fontSize: '11px', color: '#9ca3af', textAlign: 'center' }}>
-                {pts.length} puntos · {distKm} km de longitud
-            </div>
         </div>
     )
 }
-
-

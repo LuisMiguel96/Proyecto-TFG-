@@ -1,16 +1,22 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { useLocation, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { THEME, processStreamData } from '../utils/terrain'
-import ActivitySelector from '../components/ActivitySelector'
 import MLSummaryCard from '../components/MLSummaryCard'
 import TerrainTabs from '../components/TerrainTabs'
 import SegmentCarousel from '../components/SegmentCarousel'
 import SegmentCard from '../components/SegmentCard'
 import ZoomModal from '../components/ZoomModal'
 import ModelSelector from '../components/ModelSelector'
+import ModelComparisonModal from '../components/ModelComparisonModal'
+import AIAnalysis from '../components/IAAnalysis'
+import '../styles/PerformanceAnalysis.css'
+
 function PerformanceAnalysis() {
     const { user } = useAuth()
+    const location = useLocation()
+    const navigate = useNavigate()
     const [activities, setActivities] = useState([])
     const [selectedActivity, setSelectedActivity] = useState(null)
     const [analysisData, setAnalysisData] = useState(null)
@@ -22,6 +28,9 @@ function PerformanceAnalysis() {
     const [predData, setPredData] = useState(null)
     const [loadingML, setLoadingML] = useState(false)
     const [modeloSeleccionado, setModeloSeleccionado] = useState('rnn')
+    const [streamData, setStreamData] = useState(null)
+    const [showComparacion, setShowComparacion] = useState(false)
+    const [predDataAll, setPredDataAll] = useState(null)
 
     useEffect(() => {
         if (user?.id) fetchActivities()
@@ -29,10 +38,27 @@ function PerformanceAnalysis() {
 
     const fetchActivities = async () => {
         try {
-            const res = await axios.get(`http://localhost:3000/api/activities/${user.id}/type/Ride`)
-            setActivities(res.data.activities)
+            const analyzedRes = await axios.get(`http://localhost:3000/api/analyzed/${user.id}`)
+            const analyzed = analyzedRes.data
+            if (analyzed.length === 0) { navigate('/analyzed'); return }
+
+            const actividadesPromises = analyzed.map(a =>
+                axios.get(`http://localhost:3000/api/activities/detail/${a.activityId}`)
+                    .then(r => r.data).catch(() => null)
+            )
+            const actividades = (await Promise.all(actividadesPromises)).filter(Boolean)
+            setActivities(actividades)
+
+            const params = new URLSearchParams(location.search)
+            const activityId = params.get('activityId')
+            const actividadInicial = activityId
+                ? actividades.find(a => a._id === activityId) || actividades[0]
+                : actividades[0]
+
+            if (actividadInicial) analyzeActivity(actividadInicial)
         } catch (err) {
             console.error(err)
+            navigate('/analyzed')
         }
     }
 
@@ -43,13 +69,13 @@ function PerformanceAnalysis() {
         setPredData(null)
         setCurrentIndex(0)
         setExpandedIndex(null)
-
         try {
             const res = await axios.get(
                 `http://localhost:3000/api/strava/streams/${user.id}/${activity.stravaId}`
             )
             const data = processStreamData(res.data)
             if (data) setAnalysisData(data)
+            setStreamData(res.data)
             await fetchMLPrediction(res.data, modeloSeleccionado)
         } catch (err) {
             console.error('Error streams:', err)
@@ -66,12 +92,20 @@ function PerformanceAnalysis() {
             const watts = streamData.watts?.data || []
             const distance = streamData.distance?.data || []
             const cadence = streamData.cadence?.data || []
+            const payload = { altitude, velocity, watts, distance, cadence }
 
-            const res = await axios.post('http://localhost:8000/prediccion/analizar', {
-                altitude, velocity, watts, distance, cadence, modelo
+            const [rnnRes, lstmRes, bilstmRes] = await Promise.all([
+                axios.post('http://localhost:8000/prediccion/analizar', { ...payload, modelo: 'rnn' }),
+                axios.post('http://localhost:8000/prediccion/analizar', { ...payload, modelo: 'lstm' }),
+                axios.post('http://localhost:8000/prediccion/analizar', { ...payload, modelo: 'bilstm' })
+            ])
+
+            setPredData(modelo === 'rnn' ? rnnRes.data.serie : modelo === 'lstm' ? lstmRes.data.serie : bilstmRes.data.serie)
+            setPredDataAll({
+                rnn: rnnRes.data.serie,
+                lstm: lstmRes.data.serie,
+                bilstm: bilstmRes.data.serie
             })
-            console.log('Serie ejemplo:', res.data.serie[0])
-            setPredData(res.data.serie)
         } catch (err) {
             console.error('Error ML:', err)
         } finally {
@@ -106,35 +140,35 @@ function PerformanceAnalysis() {
         setExpandedIndex(null)
     }, [])
 
-    const handleCardClick = useCallback(() => {
-        setExpandedIndex(prev => prev === currentIndex ? null : currentIndex)
-    }, [currentIndex])
-
-    const handleZoom = useCallback((seg) => {
-        setZoomedSegment(seg)
-    }, [])
-
-    const handleCloseZoom = useCallback(() => {
-        setZoomedSegment(null)
-    }, [])
-
     const zoomedIndex = zoomedSegment ? activeSegments.indexOf(zoomedSegment) : -1
     const showZoomModal = zoomedIndex !== -1
 
     return (
-        <div style={{ padding: '2rem', width: '100%', maxWidth: '1400px', margin: '0 auto', fontFamily: 'system-ui, sans-serif', boxSizing: 'border-box' }}>
-            <h1 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '0.25rem', color: '#111827' }}>
-                🎯 Análisis de Rendimiento
-            </h1>
-            <p style={{ color: '#6b7280', marginBottom: '1.5rem', fontSize: '14px' }}>
+        <div className="pa-page">
+            <h1 className="pa-title">🎯 Análisis de Rendimiento</h1>
+            <p className="pa-subtitle">
                 Segmentación por terreno · Subida &gt;2.5% · Llano 0–2.5% · Bajada &lt;0% · Mínimo 4km por tramo
             </p>
 
-            <ActivitySelector
-                activities={activities}
-                selectedActivity={selectedActivity}
-                onSelect={analyzeActivity}
-            />
+            {activities.length > 0 && (
+                <div className="pa-select-wrap">
+                    <select
+                        className="pa-select"
+                        onChange={(e) => {
+                            const activity = activities.find(a => a._id === e.target.value)
+                            if (activity) analyzeActivity(activity)
+                        }}
+                        value={selectedActivity?._id || ''}
+                    >
+                        {activities.map(a => (
+                            <option key={a._id} value={a._id}>
+                                🚴 {a.name} — {(a.distance / 1000).toFixed(1)} km
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            )}
+
             <ModelSelector
                 modeloSeleccionado={modeloSeleccionado}
                 onSelect={(modelo) => {
@@ -143,14 +177,21 @@ function PerformanceAnalysis() {
                 }}
             />
 
+            {selectedActivity && streamData && (
+                <button className="pa-btn-compare" onClick={() => setShowComparacion(true)}>
+                    🔄 Comparar 3 modelos
+                </button>
+            )}
+
             {loading && (
-                <div style={{ textAlign: 'center', padding: '4rem', color: '#6b7280' }}>
-                    <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>⏳</div>
+                <div className="pa-loading">
+                    <div className="pa-loading-icon">⏳</div>
                     <p>Analizando ruta...</p>
                 </div>
             )}
+
             {loadingML && !loading && (
-                <div style={{ background: '#eff6ff', border: '1px solid #93c5fd', borderRadius: '12px', padding: '12px 16px', marginBottom: '1rem', fontSize: '13px', color: '#1d4ed8' }}>
+                <div className="pa-loading-ml">
                     🤖 Calculando potencia óptima con el modelo ML...
                 </div>
             )}
@@ -158,16 +199,14 @@ function PerformanceAnalysis() {
             {analysisData && (
                 <>
                     <MLSummaryCard predData={predData} />
-
                     <TerrainTabs
                         activeType={activeType}
                         analysisData={analysisData}
                         onTypeChange={handleTypeChange}
                     />
-
                     {activeSegments.length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: '3rem', color: '#9ca3af', background: '#f9fafb', borderRadius: '16px' }}>
-                            No hay tramos de {activeType} de más de 4km en esta actividad
+                        <div className="pa-empty">
+                            No hay tramos de {activeType}  en esta actividad
                         </div>
                     ) : (
                         <>
@@ -179,7 +218,6 @@ function PerformanceAnalysis() {
                                 onNext={handleNext}
                                 onDotClick={handleDotClick}
                             />
-
                             {showZoomModal && (
                                 <ZoomModal
                                     segment={zoomedSegment}
@@ -191,7 +229,6 @@ function PerformanceAnalysis() {
                                     terrainType={activeType}
                                 />
                             )}
-
                             <SegmentCard
                                 segment={activeSegments[currentIndex]}
                                 index={currentIndex}
@@ -206,6 +243,22 @@ function PerformanceAnalysis() {
                         </>
                     )}
                 </>
+            )}
+
+            {showComparacion && (
+                <ModelComparisonModal
+                    segment={activeSegments[currentIndex]}
+                    predDataAll={predDataAll}
+                    onClose={() => setShowComparacion(false)}
+                />
+            )}
+
+            {predDataAll && analysisData && (
+                <AIAnalysis
+                    predDataAll={predDataAll}
+                    analysisData={analysisData}
+                    selectedActivity={selectedActivity}
+                />
             )}
         </div>
     )
