@@ -4,7 +4,6 @@ import { useAuth } from '../context/AuthContext'
 import { getActivityDetail, addToAnalyzed, removeFromAnalyzedByActivity, checkIfAnalyzed } from '../utils/apiCalls'
 import { MapContainer, TileLayer, Polyline, Marker, Popup } from 'react-leaflet'
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine, ResponsiveContainer } from 'recharts'
-import MLDashboard from '../components/MLDashboard'
 import SpeedGauge from '../components/SpeedGauge'
 import 'leaflet/dist/leaflet.css'
 import '../styles/ActivityDetail.css'
@@ -18,7 +17,6 @@ function ActivityDetail() {
   const [activity, setActivity] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [showPerformanceModal, setShowPerformanceModal] = useState(false)
   const [hoveredPoint, setHoveredPoint] = useState(null)
   const [isAnalyzed, setIsAnalyzed] = useState(false)
   const [analyzingLoading, setAnalyzingLoading] = useState(false)
@@ -340,7 +338,7 @@ function ActivityDetail() {
           <span className="activity-type-badge">{activity.type}</span>
         </div>
       </div>
-
+      <div className="detail-content">
       {/* Métricas principales */}
       <div className="metrics-grid">
         <div className="metric-card-large">
@@ -656,7 +654,7 @@ function ActivityDetail() {
         </ResponsiveContainer>
       </div>
       {/* Modal de Rendimiento */}
-
+    </div>            
     </div >
   )
 }

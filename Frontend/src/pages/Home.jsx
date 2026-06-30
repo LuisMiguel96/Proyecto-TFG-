@@ -5,105 +5,157 @@ import '../styles/Home.css'
 function Home() {
   const { isAuthenticated } = useAuth()
 
-  // Imagen de ciclismo local
-  // La imagen debe estar en: public/assets/cycling-hero.jpg
-  const cyclingImage = '/assets/cycling-hero.jpg'
-
   return (
     <div className="home">
+
+      {/* HERO */}
       <div className="hero-section">
-        <h1 className="hero-title">Sistema de Análisis de Actividades Deportivas</h1>
-        <div className="hero-description">
-          <p>
-            Sincroniza, almacena y analiza tus actividades deportivas con visualizaciones 
-            interactivas y dashboards personalizados.
+        <div className="hero-content">
+          <div className="hero-badge">Powered by Machine Learning</div>
+          <h1 className="hero-title">
+            Análisis de Rendimiento<br />
+            <span className="hero-accent">Ciclista con IA</span>
+          </h1>
+          <p className="hero-description">
+            Conecta tus actividades de Strava y obtén análisis predictivo de tu rendimiento
+            mediante modelos RNN, LSTM y BiLSTM entrenados con datos de ciclistas profesionales.
           </p>
-        </div>
-      </div>
-
-      <div className="features-section">
-        <div className="feature-image-card">
-          <img 
-            src={cyclingImage}
-            alt="Análisis de actividades de ciclismo"
-            className="feature-showcase-image"
-          />
-          <div className="image-overlay">
-            <h2>Visualiza tus Entrenamientos</h2>
+          <div className="hero-actions">
             {isAuthenticated() ? (
-              <Link to="/activities" className="image-cta-button">
-                Ver Mis Actividades →
-              </Link>
+              <Link to="/activities" className="btn-primary">Ver mis actividades →</Link>
             ) : (
-              <Link to="/login" className="image-cta-button">
-                Comenzar Ahora →
-              </Link>
+              <Link to="/login" className="btn-primary">Conectar con Strava →</Link>
             )}
+            <Link to="/analyzed" className="btn-secondary">Ver análisis</Link>
           </div>
-        </div>
-
-        <h2>Características del Sistema</h2>
-        <div className="features-grid">
-
-          <div className="feature-card">
-            <div className="feature-icon">🔄</div>
-            <h3>Sincronización con Strava</h3>
-            <p>Conexión OAuth 2.0 con Strava API para importar automáticamente tus actividades deportivas</p>
-          </div>
-
-          <div className="feature-card">
-            <div className="feature-icon">📊</div>
-            <h3>Análisis Visual Interactivo</h3>
-            <p>Gráficos dinámicos con mapas de rutas, perfiles de elevación y métricas en tiempo real</p>
-          </div>
-
-          
-
-          <div className="feature-card">
-            <div className="feature-icon">🎯</div>
-            <h3>API REST Backend</h3>
-            <p>Capa de servicios personalizada para procesar y analizar datos sin límites externos</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="info-footer">
-        <div className="footer-grid">
-          <div className="footer-section">
-            <h3>📚 Quiénes Somos</h3>
-            <p>
-              Plataforma dedicada al análisis del rendimiento deportivo mediante el uso de 
-              Inteligencia Artificial. Sincronizamos tus actividades de Strava para ofrecer 
-              visualizaciones avanzadas, estadísticas detalladas y análisis predictivo de tu 
-              desempeño atlético.
-            </p>
-            <p>
-              Combinamos tecnologías web modernas con IA para transformar datos de 
-              entrenamiento en insights accionables que impulsen tu progreso deportivo.
-            </p>
-           
-          </div>
-
-          <div className="footer-section">
-            <h3>📞 Contacto</h3>
-            <div className="contact-info">
-              <p>
-                <span className="contact-icon">👤</span>
-                <strong>Estudiante:</strong> Luis Miguel Barreiro
-              </p>
-              <p>
-                <span className="contact-icon">🎓</span>
-                <strong>Centro:</strong> [UCLM]
-              </p>
-              <p>
-                <span className="contact-icon">📧</span>
-                <strong>Email:</strong> user1@gmail.com
-              </p>
-              
+          <div className="hero-stats">
+            <div className="hero-stat">
+              <span className="hero-stat-value">3</span>
+              <span className="hero-stat-label">Modelos ML</span>
+            </div>
+            <div className="hero-stat-divider" />
+            <div className="hero-stat">
+              <span className="hero-stat-value">777K</span>
+              <span className="hero-stat-label">Registros entrenamiento</span>
+            </div>
+            <div className="hero-stat-divider" />
+            <div className="hero-stat">
+              <span className="hero-stat-value">93</span>
+              <span className="hero-stat-label">Actividades profesionales</span>
             </div>
           </div>
         </div>
+        <div className="hero-image-wrap">
+          <img src="/assets/cycling-hero.jpg" alt="Ciclismo" className="hero-image" />
+          <div className="hero-image-overlay" />
+        </div>
       </div>
+
+      {/* CARACTERÍSTICAS */}
+      <div className="features-section">
+        <div className="section-label">Funcionalidades</div>
+        <h2 className="section-title">Todo lo que necesitas para mejorar</h2>
+        <div className="features-grid">
+          {[
+            {
+              icon: '⚡',
+              title: 'Predicción de potencia óptima',
+              desc: 'Modelos RNN, LSTM y BiLSTM predicen tu potencia óptima segundo a segundo comparada con ciclistas profesionales.'
+            },
+            {
+              icon: '🗺️',
+              title: 'Segmentación de rutas',
+              desc: 'Segmentación automática por tipo de terreno — subidas, llanos y bajadas — con análisis individualizado de cada tramo.'
+            },
+            {
+              icon: '🔄',
+              title: 'Sincronización con Strava',
+              desc: 'Conexión OAuth 2.0 con Strava para importar automáticamente tus actividades y streams de datos.'
+            },
+            {
+              icon: '🧠',
+              title: 'Análisis cognitivo con IA',
+              desc: 'LLaMA 3 interpreta tus datos y genera recomendaciones personalizadas para mejorar tu rendimiento.'
+            },
+            {
+              icon: '📊',
+              title: 'Visualización interactiva',
+              desc: 'Gráficos de potencia, cadencia, fuerza, fatiga acumulada y comparativa entre los 3 modelos de referencia.'
+            },
+            {
+              icon: '📱',
+              title: 'Diseño responsive',
+              desc: 'Consulta tus análisis desde cualquier dispositivo — móvil, tablet o escritorio.'
+            },
+          ].map((f, i) => (
+            <div className="feature-card" key={i}>
+              <div className="feature-icon">{f.icon}</div>
+              <h3>{f.title}</h3>
+              <p>{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* MODELOS ML */}
+      <div className="models-section">
+        <div className="models-inner">
+          <div className="section-label light">Modelos de Machine Learning</div>
+          <h2 className="section-title light">Tres niveles de referencia profesional</h2>
+          <div className="models-grid">
+            {[
+              { modelo: 'RNN', color: '#ef4444', nivel: 'Umbral mínimo', desc: 'Establece el nivel mínimo de rendimiento esperado para un ciclista profesional. Si lo superas, tu rendimiento es adecuado.', mae: '19.7W', loss: '0.0008' },
+              { modelo: 'LSTM', color: '#f59e0b', nivel: 'Nivel estándar', desc: 'Representa el rendimiento estándar en condiciones normales de entrenamiento profesional.', mae: '21.5W', loss: '0.0010' },
+              { modelo: 'BiLSTM', color: '#22c55e', nivel: 'Techo máximo', desc: 'Establece el techo máximo de rendimiento basado en los mejores patrones de ciclistas de élite.', mae: '21.8W', loss: '0.0010' },
+            ].map((m, i) => (
+              <div className="model-card" key={i} style={{ borderTop: `3px solid ${m.color}` }}>
+                <div className="model-header">
+                  <span className="model-name" style={{ color: m.color }}>{m.modelo}</span>
+                  <span className="model-nivel">{m.nivel}</span>
+                </div>
+                <p className="model-desc">{m.desc}</p>
+                <div className="model-metrics">
+                  <div className="model-metric">
+                    <span className="metric-val">{m.mae}</span>
+                    <span className="metric-lbl">Error medio</span>
+                  </div>
+                  <div className="model-metric">
+                    <span className="metric-val">{m.loss}</span>
+                    <span className="metric-lbl">Test Loss</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* FOOTER */}
+      <div className="info-footer">
+        <div className="footer-grid">
+          <div className="footer-section">
+            <h3>CycleAnalytics</h3>
+            <p>
+              Plataforma de análisis de rendimiento ciclista mediante Machine Learning.
+              Desarrollada como Trabajo de Fin de Grado, combina modelos RNN, LSTM y BiLSTM
+              entrenados con datos reales de ciclistas profesionales para ofrecer análisis
+              predictivo personalizado.
+            </p>
+          </div>
+          <div className="footer-section">
+            <h3>Contacto</h3>
+            <div className="contact-info">
+              <p><strong>Autor:</strong> Luis Miguel Barreiro</p>
+              <p><strong>Centro:</strong> UCLM</p>
+              <p><strong>Email:</strong> user1@gmail.com</p>
+            </div>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <span>© 2025 CycleAnalytics · TFG</span>
+        </div>
+      </div>
+
     </div>
   )
 }
