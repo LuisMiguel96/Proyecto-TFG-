@@ -44,8 +44,11 @@ function AnalyzedActivities() {
     }
   }
   const handleViewDetail = (activityId) => {
-    navigate(`/performance?activityId=${activityId}`)
+    navigate(`/activity/${activityId}`)
   }
+
+  
+
   const formatDate = (dateString) => {
     const date = new Date(dateString)
     return date.toLocaleDateString('es-ES', {
