@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { getActivityDetail, addToAnalyzed, removeFromAnalyzedByActivity, checkIfAnalyzed } from '../utils/apiCalls'
 import { MapContainer, TileLayer, Polyline, Marker, Popup } from 'react-leaflet'
-import { LineChart, Line, AreaChart, Area, BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine, ResponsiveContainer } from 'recharts'
+import { LineChart, Line, AreaChart, Area, ComposedChart, BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine, ResponsiveContainer } from 'recharts'
 import SpeedGauge from '../components/SpeedGauge'
 import 'leaflet/dist/leaflet.css'
 import '../styles/ActivityDetail.css'
@@ -23,6 +23,8 @@ function ActivityDetail() {
   const [streams, setStreams] = useState(null)
   const gaugeRef = useRef(null)
   const lastMove = useRef(0)
+  const [showCadencia, setShowCadencia] = useState(true)
+  const [showVelocidad, setShowVelocidad] = useState(true)
 
   const updateSpeed = useCallback((speed) => {
     if (gaugeRef.current) gaugeRef.current.update(speed)
@@ -304,7 +306,8 @@ function ActivityDetail() {
 
   const chartDataSampled = sampleData(chartData, 200)
   const fatigaDataSampled = sampleData(fatigaData, 300)
-
+  const lastKm = chartData[chartData.length - 1]?.distance || 0
+  const xTicks = Array.from({ length: Math.floor(lastKm) + 1 }, (_, i) => i)
   const routeCoordinates = activity.mapPolyline
     ? polyline.decode(activity.mapPolyline)
     : []
@@ -339,322 +342,505 @@ function ActivityDetail() {
         </div>
       </div>
       <div className="detail-content">
-      {/* Métricas principales */}
-      <div className="metrics-grid">
-        <div className="metric-card-large">
-          <span className="metric-icon">📏</span>
-          <div>
-            <h3>{formatDistance(activity.distance)} km</h3>
-            <p>Distancia</p>
-          </div>
-        </div>
-        <div className="metric-card-large">
-          <span className="metric-icon">⏱️</span>
-          <div>
-            <h3>{formatTime(activity.movingTime)}</h3>
-            <p>Tiempo en Movimiento</p>
-          </div>
-        </div>
-        <div className="metric-card-large">
-          <span className="metric-icon">⚡</span>
-          <div>
-            <h3>{formatSpeed(activity.averageSpeed)} km/h</h3>
-            <p>Velocidad Media</p>
-          </div>
-        </div>
-        <div className="metric-card-large">
-          <span className="metric-icon">🚀</span>
-          <div>
-            <h3>{formatSpeed(activity.maxSpeed)} km/h</h3>
-            <p>Velocidad Máxima</p>
-          </div>
-        </div>
-        {activity.totalElevationGain > 0 && (
+        {/* Métricas principales */}
+        <div className="metrics-grid">
           <div className="metric-card-large">
-            <span className="metric-icon">⛰️</span>
+            <span className="metric-icon">📏</span>
             <div>
-              <h3>{activity.totalElevationGain} m</h3>
-              <p>Desnivel Positivo</p>
+              <h3>{formatDistance(activity.distance)} km</h3>
+              <p>Distancia</p>
             </div>
           </div>
-        )}
-        {activity.averageWatts && (
+          <div className="metric-card-large">
+            <span className="metric-icon">⏱️</span>
+            <div>
+              <h3>{formatTime(activity.movingTime)}</h3>
+              <p>Tiempo en Movimiento</p>
+            </div>
+          </div>
           <div className="metric-card-large">
             <span className="metric-icon">⚡</span>
             <div>
-              <h3>{Math.round(activity.averageWatts)} W</h3>
-              <p>Vatios Medios</p>
+              <h3>{formatSpeed(activity.averageSpeed)} km/h</h3>
+              <p>Velocidad Media</p>
             </div>
           </div>
-        )}
-        {activity.weightedAverageWatts && (
-          <div className="metric-card-large">
-            <span className="metric-icon">💪</span>
-            <div>
-              <h3>{Math.round(activity.weightedAverageWatts)} W</h3>
-              <p>Vatios Normalizados</p>
-            </div>
-          </div>
-        )}
-        {activity.maxWatts && (
           <div className="metric-card-large">
             <span className="metric-icon">🚀</span>
             <div>
-              <h3>{activity.maxWatts} W</h3>
-              <p>Vatios Máximos</p>
+              <h3>{formatSpeed(activity.maxSpeed)} km/h</h3>
+              <p>Velocidad Máxima</p>
             </div>
           </div>
-        )}
-        {activity.kilojoules && (
-          <div className="metric-card-large">
-            <span className="metric-icon">🔋</span>
-            <div>
-              <h3>{Math.round(activity.kilojoules)} kJ</h3>
-              <p>Energía Total</p>
+          {activity.totalElevationGain > 0 && (
+            <div className="metric-card-large">
+              <span className="metric-icon">⛰️</span>
+              <div>
+                <h3>{activity.totalElevationGain} m</h3>
+                <p>Desnivel Positivo</p>
+              </div>
             </div>
-          </div>
-        )}
-        {activity.averageCadence && (
-          <div className="metric-card-large">
-            <span className="metric-icon">🔄</span>
-            <div>
-              <h3>{Math.round(activity.averageCadence)} rpm</h3>
-              <p>Cadencia Media</p>
+          )}
+          {activity.averageWatts && (
+            <div className="metric-card-large">
+              <span className="metric-icon">⚡</span>
+              <div>
+                <h3>{Math.round(activity.averageWatts)} W</h3>
+                <p>Vatios Medios</p>
+              </div>
             </div>
-          </div>
-        )}
-        {activity.type === 'Run' && (
-          <div className="metric-card-large">
-            <span className="metric-icon">🎯</span>
-            <div>
-              <h3>{formatPace(activity.averageSpeed)}</h3>
-              <p>Ritmo Medio</p>
+          )}
+          {activity.weightedAverageWatts && (
+            <div className="metric-card-large">
+              <span className="metric-icon">💪</span>
+              <div>
+                <h3>{Math.round(activity.weightedAverageWatts)} W</h3>
+                <p>Vatios Normalizados</p>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
-
-      {/* Mapa de la ruta */}
-      <div className="map-container">
-        <h2>🗺️ Mapa de la ruta</h2>
-        <div className="map-wrapper">
-          <MapContainer
-            center={centerPosition}
-            zoom={13}
-            style={{ height: '100%', width: '100%', borderRadius: '10px' }}
-          >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            <Polyline positions={routeCoordinates} color="#fc5200" weight={4} />
-            {routeCoordinates.length > 0 && (
-              <>
-                <Marker position={routeCoordinates[0]}>
-                  <Popup>🚀 Inicio</Popup>
-                </Marker>
-                <Marker position={routeCoordinates[routeCoordinates.length - 1]}>
-                  <Popup>🏁 Fin</Popup>
-                </Marker>
-              </>
-            )}
-            {hoveredPoint && (
-              <Marker position={[hoveredPoint.lat, hoveredPoint.lon]}>
-                <Popup>
-                  📍 Km {hoveredPoint.distance}<br />
-                  ⚡ {hoveredPoint.velocidad} km/h<br />
-                  ⛰️ {hoveredPoint.elevacion} m
-                </Popup>
-              </Marker>
-            )}
-          </MapContainer>
+          )}
+          {activity.maxWatts && (
+            <div className="metric-card-large">
+              <span className="metric-icon">🚀</span>
+              <div>
+                <h3>{activity.maxWatts} W</h3>
+                <p>Vatios Máximos</p>
+              </div>
+            </div>
+          )}
+          {activity.kilojoules && (
+            <div className="metric-card-large">
+              <span className="metric-icon">🔋</span>
+              <div>
+                <h3>{Math.round(activity.kilojoules)} kJ</h3>
+                <p>Energía Total</p>
+              </div>
+            </div>
+          )}
+          {activity.averageCadence && (
+            <div className="metric-card-large">
+              <span className="metric-icon">🔄</span>
+              <div>
+                <h3>{Math.round(activity.averageCadence)} rpm</h3>
+                <p>Cadencia Media</p>
+              </div>
+            </div>
+          )}
+          {activity.type === 'Run' && (
+            <div className="metric-card-large">
+              <span className="metric-icon">🎯</span>
+              <div>
+                <h3>{formatPace(activity.averageSpeed)}</h3>
+                <p>Ritmo Medio</p>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
 
-      {/* Sección combinada: Velocímetro + Perfil de Elevación */}
-      <div className="interactive-section">
-        <h2>📊 Análisis Interactivo de la Ruta</h2>
-        <p className="interactive-hint">💡 Pasa el cursor sobre el perfil de elevación para ver la velocidad en cada punto</p>
-
-        {/* Perfil de Elevación Interactivo - Ancho Completo */}
-        <div className="elevation-profile-full">
-          <h3>⛰️ Perfil de Elevación</h3>
-          <ResponsiveContainer width="100%" height={350} style={{ overflow: 'visible' }}>
-            <AreaChart
-              data={chartData}
-              onMouseMove={handleMouseMove}
-              onMouseLeave={handleChartLeave}
+        {/* Mapa de la ruta */}
+        <div className="map-container">
+          <h2>🗺️ Mapa de la ruta</h2>
+          <div className="map-wrapper">
+            <MapContainer
+              center={centerPosition}
+              zoom={13}
+              style={{ height: '100%', width: '100%', borderRadius: '10px' }}
             >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              <Polyline positions={routeCoordinates} color="#fc5200" weight={4} />
+              {routeCoordinates.length > 0 && (
+                <>
+                  <Marker position={routeCoordinates[0]}>
+                    <Popup>🚀 Inicio</Popup>
+                  </Marker>
+                  <Marker position={routeCoordinates[routeCoordinates.length - 1]}>
+                    <Popup>🏁 Fin</Popup>
+                  </Marker>
+                </>
+              )}
+              {hoveredPoint && (
+                <Marker position={[hoveredPoint.lat, hoveredPoint.lon]}>
+                  <Popup>
+                    📍 Km {hoveredPoint.distance}<br />
+                    ⚡ {hoveredPoint.velocidad} km/h<br />
+                    ⛰️ {hoveredPoint.elevacion} m
+                  </Popup>
+                </Marker>
+              )}
+            </MapContainer>
+          </div>
+        </div>
+
+        {/* Sección combinada: Velocímetro + Perfil de Elevación */}
+        <div className="interactive-section">
+          <h2>📊 Análisis Interactivo de la Ruta</h2>
+          <p className="interactive-hint">💡 Pasa el cursor sobre el perfil de elevación para ver la velocidad en cada punto</p>
+
+          {/* Perfil de Elevación Interactivo - Ancho Completo */}
+          <div className="elevation-profile-full">
+            <h3>⛰️ Perfil de Elevación</h3>
+            <ResponsiveContainer width="100%" height={350} style={{ overflow: 'visible' }}>
+              <AreaChart
+                data={chartData}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleChartLeave}
+              >
+                <defs>
+                  <linearGradient id="colorElevation" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#fc5200" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#fc5200" stopOpacity={0.1} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="distance"
+                  type="number"
+                  domain={[0, lastKm]}
+                  ticks={xTicks}
+                  tickFormatter={(v) => Number.isInteger(v) ? `${v}` : ''}
+                  label={{ value: 'Distancia (km)', position: 'insideBottom', offset: -5 }}
+                />
+                <YAxis
+                  label={{ value: 'Elevación (m)', angle: -90, position: 'insideLeft' }}
+                />
+                <Tooltip
+                  content={({ active, payload }) => {
+                    if (active && payload && payload[0]) {
+                      const data = payload[0].payload
+                      updateSpeed(parseFloat(data.velocidad))
+                      return (
+                        <div className="custom-tooltip">
+                          <p><strong>Distancia:</strong> {data.distance} km</p>
+                          <p><strong>Elevación:</strong> {data.elevacion} m</p>
+                          <p><strong>Velocidad:</strong> {data.velocidad} km/h</p>
+                        </div>
+                      )
+                    }
+                    return null
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="elevacion"
+                  stroke="#fc5200"
+                  strokeWidth={2}
+                  fill="url(#colorElevation)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+
+            {hoveredPoint && (
+              <div className="hovered-info-inline">
+                <span>📍 {hoveredPoint.distance} km</span>
+                <span>⛰️ {hoveredPoint.elevacion} m</span>
+                <span>⚡ {hoveredPoint.velocidad} km/h</span>
+              </div>
+            )}
+          </div>
+
+          {/* Velocímetro Compacto Debajo */}
+          <div className="speedometer-compact">
+            <SpeedGauge ref={gaugeRef} maxSpeed={activity.maxSpeed} />
+            <div className="speed-stats-compact">
+              <div className="speed-stat-compact">
+                <span className="stat-label">Media</span>
+                <span className="stat-value">{formatSpeed(activity.averageSpeed)} km/h</span>
+              </div>
+              <div className="speed-stat-compact">
+                <span className="stat-label">Máxima</span>
+                <span className="stat-value">{formatSpeed(activity.maxSpeed)} km/h</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Gráfico de Velocidad a lo largo de la ruta */}
+        <div className="chart-container">
+          <h2>📊 Velocidad a lo largo de la ruta</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <ComposedChart data={chartDataSampled}>
               <defs>
-                <linearGradient id="colorElevation" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#fc5200" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#fc5200" stopOpacity={0.1} />
+                <linearGradient id="elevGhostVel" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#475569" stopOpacity={0.7} />
+                  <stop offset="95%" stopColor="#475569" stopOpacity={0.15} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 dataKey="distance"
+                type="number"
+                domain={[0, lastKm]}
+                ticks={xTicks}
+                tickFormatter={(v) => Number.isInteger(v) ? `${v}` : ''}
                 label={{ value: 'Distancia (km)', position: 'insideBottom', offset: -5 }}
               />
-              <YAxis
-                label={{ value: 'Elevación (m)', angle: -90, position: 'insideLeft' }}
-              />
-              <Tooltip
-                content={({ active, payload }) => {
-                  if (active && payload && payload[0]) {
-                    const data = payload[0].payload
-                    updateSpeed(parseFloat(data.velocidad))
-                    return (
-                      <div className="custom-tooltip">
-                        <p><strong>Distancia:</strong> {data.distance} km</p>
-                        <p><strong>Elevación:</strong> {data.elevacion} m</p>
-                        <p><strong>Velocidad:</strong> {data.velocidad} km/h</p>
-                      </div>
-                    )
-                  }
-                  return null
+              <YAxis />
+              <YAxis yAxisId="elev" hide domain={[0, dataMax => dataMax * 1.2]} />
+              <Tooltip formatter={(value, name) => {
+                if (name === 'Velocidad') return [`${value} km/h`, 'Velocidad']
+                if (name === 'Elevación') return [`${value} m`, 'Altitud']
+                return [value, name]
+              }} />
+              <Legend
+                wrapperStyle={{ paddingTop: '15px' }}
+                formatter={(value) => {
+                  if (value === 'Velocidad') return '🚴 Velocidad'
+                  return value
                 }}
               />
-              <Area
-                type="monotone"
-                dataKey="elevacion"
-                stroke="#fc5200"
-                strokeWidth={2}
-                fill="url(#colorElevation)"
+              <Area yAxisId="elev" type="monotone" dataKey="elevacion" stroke="none" fill="url(#elevGhostVel)" name="Elevación" />
+              <Line type="monotone" dataKey="velocidad" stroke="#fc5200" strokeWidth={2} name="Velocidad" dot={false} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+        {/* Vatios a lo largo de la ruta */}
+        <div className="chart-container">
+          <h2>⚡ Potencia a lo largo de la ruta</h2>
+          <p style={{ color: '#6b7280', fontSize: '0.9rem', marginBottom: '1rem' }}>
+            Muestra cuántos vatios has producido en cada momento de la ruta. La línea de vatios normalizados
+            representa mejor el esfuerzo real que has sentido en las piernas, ya que penaliza los picos y
+            arrancadas bruscas frente a un ritmo constante.
+          </p>
 
+          <div className="heartrate-stats">
+            <div className="hr-stat">
+              <span>Media:</span>
+              <strong>{activity.averageWatts ? Math.round(activity.averageWatts) : Math.round(chartData.reduce((s, p) => s + p.vatios, 0) / chartData.length)} W</strong>
+            </div>
+            <div className="hr-stat">
+              <span>Normalizados:</span>
+              <strong style={{ color: '#dc2626' }}>
+                {Math.round(Math.pow(chartData.reduce((s, p) => s + Math.pow(p.vatios || 0, 4), 0) / chartData.length, 0.25))} W
+              </strong>
+            </div>
+            <div className="hr-stat">
+              <span>Constancia:</span>
+              <strong style={{
+                color: (() => {
+                  const np = Math.pow(chartData.reduce((s, p) => s + Math.pow(p.vatios || 0, 4), 0) / chartData.length, 0.25)
+                  const media = activity.averageWatts || (chartData.reduce((s, p) => s + p.vatios, 0) / chartData.length)
+                  const vi = np / media
+                  return vi > 1.15 ? '#dc2626' : vi > 1.08 ? '#f59e0b' : '#16a34a'
+                })()
+              }}>
+                {(() => {
+                  const np = Math.pow(chartData.reduce((s, p) => s + Math.pow(p.vatios || 0, 4), 0) / chartData.length, 0.25)
+                  const media = activity.averageWatts || (chartData.reduce((s, p) => s + p.vatios, 0) / chartData.length)
+                  const vi = np / media
+                  return vi > 1.15 ? '⚡ Muy irregular' : vi > 1.08 ? '〰️ Algo variable' : '✅ Constante'
+                })()}
+              </strong>
+            </div>
+            <div className="hr-stat"><span>Máx:</span><strong>{Math.max(...chartData.map(p => p.vatios))} W</strong></div>
+            <div className="hr-stat"><span>FTP ref.:</span><strong>{FTP} W</strong></div>
+          </div>
+
+          <ResponsiveContainer width="100%" height={340}>
+            <ComposedChart data={chartDataSampled} margin={{ top: 10, right: 10, left: 10, bottom: 30 }}>
+              <defs>
+                <linearGradient id="vatiosGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.1} />
+                </linearGradient>
+                <linearGradient id="elevGhostVatios" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#475569" stopOpacity={0.7} />
+                  <stop offset="95%" stopColor="#475569" stopOpacity={0.15} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                dataKey="distance"
+                type="number"
+                domain={[0, lastKm]}
+                ticks={xTicks}
+                tickFormatter={(v) => Number.isInteger(v) ? `${v}` : ''}
+                label={{ value: 'Distancia (km)', position: 'insideBottom', offset: -15 }}
               />
-            </AreaChart>
+              <YAxis yAxisId="elev" hide domain={[0, dataMax => dataMax * 1.2]} />
+              <YAxis />
+              <Tooltip
+                formatter={(value, name) => {
+                  if (name === 'Vatios') return [`${value}W`, 'Potencia instantánea']
+                  if (name === 'Elevación') return [`${value} m`, 'Altitud']
+                  return [value, name]
+                }}
+              />
+              <Legend
+                wrapperStyle={{ paddingTop: '20px' }}
+                formatter={(value) => {
+                  if (value === 'Vatios') return '⚡ Potencia'
+                  return value
+                }}
+              />
+              <ReferenceLine y={FTP} stroke="#1e293b" strokeDasharray="5 5" label={{ value: `FTP ${FTP}W`, position: 'right', fontSize: 11 }} />
+              <Area yAxisId="elev" type="monotone" dataKey="elevacion" stroke="none" fill="url(#elevGhostVatios)" name="Elevación" />
+              <Area type="monotone" dataKey="vatios" stroke="#f59e0b" strokeWidth={2} fill="url(#vatiosGrad)" name="Vatios" />
+            </ComposedChart>
           </ResponsiveContainer>
 
-          {hoveredPoint && (
-            <div className="hovered-info-inline">
-              <span>📍 {hoveredPoint.distance} km</span>
-              <span>⛰️ {hoveredPoint.elevacion} m</span>
-              <span>⚡ {hoveredPoint.velocidad} km/h</span>
-            </div>
-          )}
-        </div>
-
-        {/* Velocímetro Compacto Debajo */}
-        <div className="speedometer-compact">
-          <SpeedGauge ref={gaugeRef} maxSpeed={activity.maxSpeed} />
-          <div className="speed-stats-compact">
-            <div className="speed-stat-compact">
-              <span className="stat-label">Media</span>
-              <span className="stat-value">{formatSpeed(activity.averageSpeed)} km/h</span>
-            </div>
-            <div className="speed-stat-compact">
-              <span className="stat-label">Máxima</span>
-              <span className="stat-value">{formatSpeed(activity.maxSpeed)} km/h</span>
-            </div>
+          <div style={{ marginTop: '12px', fontSize: '12px', color: '#6b7280', background: '#f9fafb', padding: '10px', borderRadius: '8px' }}>
+            💡 La línea roja marca tu FTP de referencia ({FTP}W) — el máximo que puedes mantener de forma sostenida.
+            Si tus vatios normalizados están muy por encima de tu media, significa que has tenido muchas arrancadas
+            que te han costado más energía de la que tu media sugiere.
           </div>
         </div>
-      </div>
 
-      {/* Gráfico de Velocidad a lo largo de la ruta */}
-      <div className="chart-container">
-        <h2>📊 Velocidad a lo largo de la ruta</h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={chartDataSampled}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="distance" label={{ value: 'Distancia (km)', position: 'insideBottom', offset: -5 }} />
-            <YAxis label={{ value: 'Velocidad (km/h)', angle: -90, position: 'insideLeft' }} />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="velocidad" stroke="#fc5200" strokeWidth={2} name="Velocidad" />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Vatios a lo largo de la ruta */}
-      <div className="chart-container">
-        <h2>⚡ Potencia a lo largo de la ruta</h2>
-        <div className="heartrate-stats">
-          <div className="hr-stat"><span>Media:</span><strong>{activity.averageWatts ? Math.round(activity.averageWatts) : Math.round(chartData.reduce((s, p) => s + p.vatios, 0) / chartData.length)} W</strong></div>
-          <div className="hr-stat"><span>Máx:</span><strong>{Math.max(...chartData.map(p => p.vatios))} W</strong></div>
-          <div className="hr-stat"><span>FTP ref.:</span><strong>{FTP} W</strong></div>
+        {/* Zonas de potencia */}
+        <div className="chart-container">
+          <h2>🏋️ Distribución por zonas de potencia</h2>
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={zonasData} layout="vertical" margin={{ left: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" unit="%" domain={[0, 100]} />
+              <YAxis type="category" dataKey="zona" width={120} tick={{ fontSize: 11 }} />
+              <Tooltip formatter={(v) => [`${v}%`, 'Tiempo']} />
+              <Bar dataKey="porcentaje" radius={[0, 6, 6, 0]}>
+                {zonasData.map((z, i) => (
+                  <Cell key={i} fill={z.color} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </div>
-        <ResponsiveContainer width="100%" height={300}>
-          <AreaChart data={chartDataSampled}>
-            <defs>
-              <linearGradient id="vatiosGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.1} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="distance" label={{ value: 'Distancia (km)', position: 'insideBottom', offset: -5 }} />
-            <YAxis label={{ value: 'Vatios (W)', angle: -90, position: 'insideLeft' }} />
-            <Tooltip formatter={(v) => [`${v}W`, 'Potencia']} />
-            <ReferenceLine y={FTP} stroke="#020d2eff" strokeDasharray="5 5" />
-            <Area type="monotone" dataKey="vatios" stroke="#f59e0b" strokeWidth={2} fill="url(#vatiosGrad)" name="Vatios" />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
 
-      {/* Zonas de potencia */}
-      <div className="chart-container">
-        <h2>🏋️ Distribución por zonas de potencia</h2>
-        <ResponsiveContainer width="100%" height={280}>
-          <BarChart data={zonasData} layout="vertical" margin={{ left: 20 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis type="number" unit="%" domain={[0, 100]} />
-            <YAxis type="category" dataKey="zona" width={120} tick={{ fontSize: 11 }} />
-            <Tooltip formatter={(v) => [`${v}%`, 'Tiempo']} />
-            <Bar dataKey="porcentaje" radius={[0, 6, 6, 0]}>
-              {zonasData.map((z, i) => (
-                <Cell key={i} fill={z.color} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+        {/* Cadencia y Fuerza */}
+        {/* Cadencia y Velocidad */}
+        {/* Cadencia y Velocidad */}
+        {/* Cadencia y Velocidad */}
+        <div className="chart-container">
+          <h2>🔄 Ritmo de pedaleo</h2>
+          <p style={{ color: '#6b7280', fontSize: '0.9rem', marginBottom: '1rem' }}>
+            Compara cuántas vueltas das al pedal por minuto (cadencia) con la velocidad que consigues.
+          </p>
 
-      {/* Cadencia y Fuerza */}
-      <div className="chart-container">
-        <h2>🔄 Cadencia y Fuerza</h2>
-        <div className="heartrate-stats">
-          <div className="hr-stat"><span>Cadencia media:</span><strong>{Math.round(chartData.reduce((s, p) => s + p.cadencia, 0) / chartData.length)} rpm</strong></div>
-          <div className="hr-stat"><span>Fuerza media:</span><strong>{Math.round(chartData.filter(p => p.fuerza > 0).reduce((s, p) => s + p.fuerza, 0) / chartData.filter(p => p.fuerza > 0).length)} Nm</strong></div>
+          <div className="heartrate-stats" style={{ alignItems: 'center' }}>
+            <div className="hr-stat">
+              <span>Cadencia media</span>
+              <strong style={{ color: '#8b5cf6' }}>
+                {Math.round(chartData.reduce((s, p) => s + p.cadencia, 0) / chartData.length)} rpm
+              </strong>
+            </div>
+            <div className="hr-stat">
+              <span>Velocidad media</span>
+              <strong style={{ color: '#fc5200' }}>
+                {(chartData.reduce((s, p) => s + p.velocidad, 0) / chartData.length).toFixed(1)} km/h
+              </strong>
+            </div>
+            <div className="hr-stat">
+              <span>Estilo de pedaleo</span>
+              <strong style={{ color: '#111827' }}>
+                {Math.round(chartData.reduce((s, p) => s + p.cadencia, 0) / chartData.length) < 80
+                  ? '💪 De fuerza'
+                  : Math.round(chartData.reduce((s, p) => s + p.cadencia, 0) / chartData.length) > 95
+                    ? '🌀 Muy ágil'
+                    : '✅ Equilibrado'}
+              </strong>
+            </div>
+
+            {/* Selector */}
+            <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+              <button
+                onClick={() => setShowCadencia(v => !v)}
+                style={{
+                  padding: '6px 12px', borderRadius: '8px', border: 'none', fontSize: '12px',
+                  fontWeight: 600, cursor: 'pointer',
+                  background: showCadencia ? '#8b5cf6' : '#f3f4f6',
+                  color: showCadencia ? 'white' : '#6b7280'
+                }}
+              >
+                🌀 Cadencia
+              </button>
+              <button
+                onClick={() => setShowVelocidad(v => !v)}
+                style={{
+                  padding: '6px 12px', borderRadius: '8px', border: 'none', fontSize: '12px',
+                  fontWeight: 600, cursor: 'pointer',
+                  background: showVelocidad ? '#fc5200' : '#f3f4f6',
+                  color: showVelocidad ? 'white' : '#6b7280'
+                }}
+              >
+                🚴 Velocidad
+              </button>
+            </div>
+          </div>
+
+          <ResponsiveContainer width="100%" height={340}>
+            <ComposedChart data={chartDataSampled} margin={{ top: 10, right: 10, left: 10, bottom: 30 }}>
+              <defs>
+                <linearGradient id="elevGhost" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#475569" stopOpacity={0.7} />
+                  <stop offset="95%" stopColor="#475569" stopOpacity={0.15} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                dataKey="distance"
+                type="number"
+                domain={[0, lastKm]}
+                ticks={xTicks}
+                tickFormatter={(v) => Number.isInteger(v) ? `${v}` : ''}
+                label={{ value: 'Distancia (km)', position: 'insideBottom', offset: -15 }}
+              />
+              <YAxis yAxisId="elev" hide domain={[0, dataMax => dataMax * 1.2]} />
+              <YAxis yAxisId="cad" domain={['auto', 'auto']} hide={!showCadencia} />
+              <YAxis yAxisId="vel" orientation="right" domain={['auto', 'auto']} hide={!showVelocidad} />
+              <Tooltip
+                formatter={(value, name) => {
+                  if (name === 'Cadencia') return [`${value} rpm`, 'Vueltas al pedal por minuto']
+                  if (name === 'Velocidad') return [`${value} km/h`, 'Velocidad']
+                  if (name === 'Elevación') return [`${value} m`, 'Altitud']
+                  return [value, name]
+                }}
+              />
+              <Area yAxisId="elev" type="monotone" dataKey="elevacion" stroke="none" fill="url(#elevGhost)" name="Elevación" legendType="none" />
+              {showCadencia && (
+                <Line yAxisId="cad" type="monotone" dataKey="cadencia" stroke="#8b5cf6" strokeWidth={2} name="Cadencia" dot={false} />
+              )}
+              {showVelocidad && (
+                <Line yAxisId="vel" type="monotone" dataKey="velocidad" stroke="#fc5200" strokeWidth={2} name="Velocidad" dot={false} />
+              )}
+            </ComposedChart>
+          </ResponsiveContainer>
+
+          <div style={{ marginTop: '12px', fontSize: '12px', color: '#6b7280', background: '#f9fafb', padding: '10px', borderRadius: '8px' }}>
+            💡 En subidas (zona sombreada más alta) es normal que la cadencia baje al mismo tiempo que la velocidad.
+            En llano y bajadas lo eficiente es subir ambas a la vez.
+          </div>
         </div>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="distance" label={{ value: 'Distancia (km)', position: 'insideBottom', offset: -5 }} />
-            <YAxis yAxisId="cad" label={{ value: 'rpm', angle: -90, position: 'insideLeft' }} />
-            <YAxis yAxisId="fuerza" orientation="right" label={{ value: 'Nm', angle: 90, position: 'insideRight' }} />
-            <Tooltip />
-            <Legend />
-            <Line yAxisId="cad" type="monotone" dataKey="cadencia" stroke="#8b5cf6" strokeWidth={2} name="Cadencia (rpm)" dot={false} />
-            <Line yAxisId="fuerza" type="monotone" dataKey="fuerza" stroke="#f59e0b" strokeWidth={2} name="Fuerza (Nm)" dot={false} />
-          </LineChart>
-        </ResponsiveContainer>
+        {/* Fatiga acumulada */}
+        <div className="chart-container">
+          <h2>😓 Fatiga acumulada</h2>
+          <p style={{ color: '#6b7280', fontSize: '0.9rem', marginBottom: '1rem' }}>
+            Porcentaje de esfuerzo acumulado respecto al FTP de referencia ({FTP}W)
+          </p>
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart data={fatigaData}>
+              <defs>
+                <linearGradient id="fatigaGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                dataKey="distance"
+                type="number"
+                domain={[0, lastKm]}
+                ticks={xTicks}
+                tickFormatter={(v) => Number.isInteger(v) ? `${v}` : ''}
+                label={{ value: 'Distancia (km)', position: 'insideBottom', offset: -5 }}
+              />
+              <YAxis label={{ value: 'Fatiga (%)', angle: -90, position: 'insideLeft' }} />
+              <Tooltip formatter={(v) => [`${v}%`, 'Fatiga']} />
+              <Area type="monotone" dataKey="fatiga" stroke="#ef4444" strokeWidth={2} fill="url(#fatigaGrad)" name="Fatiga" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+        {/* Modal de Rendimiento */}
       </div>
-
-      {/* Fatiga acumulada */}
-      <div className="chart-container">
-        <h2>😓 Fatiga acumulada</h2>
-        <p style={{ color: '#6b7280', fontSize: '0.9rem', marginBottom: '1rem' }}>
-          Porcentaje de esfuerzo acumulado respecto al FTP de referencia ({FTP}W)
-        </p>
-        <ResponsiveContainer width="100%" height={300}>
-          <AreaChart data={fatigaData}>
-            <defs>
-              <linearGradient id="fatigaGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="distance" label={{ value: 'Distancia (km)', position: 'insideBottom', offset: -5 }} />
-            <YAxis label={{ value: 'Fatiga (%)', angle: -90, position: 'insideLeft' }} />
-            <Tooltip formatter={(v) => [`${v}%`, 'Fatiga']} />
-            <Area type="monotone" dataKey="fatiga" stroke="#ef4444" strokeWidth={2} fill="url(#fatigaGrad)" name="Fatiga" />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
-      {/* Modal de Rendimiento */}
-    </div>            
     </div >
   )
 }

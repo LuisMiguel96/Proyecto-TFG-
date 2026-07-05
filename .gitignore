@@ -1,4 +1,5 @@
 Backend/.env
+*.env
 Backend/node_modules/
 Frontend/node_modules/
 ML/outputs/*.parquet
@@ -11,4 +12,3 @@ ML/api/src/models/*.keras
 ML/api/src/models/*.pkl
 ML/outputs/dataset_features.csv
 ML/outputs/dataset_limpio.csv
-ML/notebooks/Backend/.env

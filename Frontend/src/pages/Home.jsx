@@ -31,17 +31,17 @@ function Home() {
           <div className="hero-stats">
             <div className="hero-stat">
               <span className="hero-stat-value">3</span>
-              <span className="hero-stat-label">Modelos ML</span>
+              <span className="hero-stat-label">Niveles de referencia profesional</span>
             </div>
             <div className="hero-stat-divider" />
             <div className="hero-stat">
-              <span className="hero-stat-value">777K</span>
-              <span className="hero-stat-label">Registros entrenamiento</span>
+              <span className="hero-stat-value">Registros</span>
+              <span className="hero-stat-label">Ciclistas profesionales</span>
             </div>
             <div className="hero-stat-divider" />
             <div className="hero-stat">
-              <span className="hero-stat-value">93</span>
-              <span className="hero-stat-label">Actividades profesionales</span>
+              <span className="hero-stat-value">¿Dónde estás tú?</span>
+              <span className="hero-stat-label">Descúbrelo ahora</span>
             </div>
           </div>
         </div>
@@ -75,7 +75,7 @@ function Home() {
             {
               icon: '🧠',
               title: 'Análisis cognitivo con IA',
-              desc: 'LLaMA 3 interpreta tus datos y genera recomendaciones personalizadas para mejorar tu rendimiento.'
+              desc: 'GPT-OSS 120B interpreta tus datos y genera recomendaciones personalizadas para mejorar tu rendimiento.'
             },
             {
               icon: '📊',
@@ -104,9 +104,9 @@ function Home() {
           <h2 className="section-title light">Tres niveles de referencia profesional</h2>
           <div className="models-grid">
             {[
-              { modelo: 'RNN', color: '#ef4444', nivel: 'Umbral mínimo', desc: 'Establece el nivel mínimo de rendimiento esperado para un ciclista profesional. Si lo superas, tu rendimiento es adecuado.', mae: '19.7W', loss: '0.0008' },
-              { modelo: 'LSTM', color: '#f59e0b', nivel: 'Nivel estándar', desc: 'Representa el rendimiento estándar en condiciones normales de entrenamiento profesional.', mae: '21.5W', loss: '0.0010' },
-              { modelo: 'BiLSTM', color: '#22c55e', nivel: 'Techo máximo', desc: 'Establece el techo máximo de rendimiento basado en los mejores patrones de ciclistas de élite.', mae: '21.8W', loss: '0.0010' },
+              { modelo: 'RNN', color: '#ef4444', nivel: 'Umbral mínimo', desc: 'Establece el nivel mínimo de rendimiento esperado para un ciclista profesional. Si lo superas, tu rendimiento es adecuado.', dato1: '~19.7W', label1: 'Precisión de predicción', dato2: '777K', label2: 'Registros de entrenamiento' },
+              { modelo: 'LSTM', color: '#f59e0b', nivel: 'Nivel estándar', desc: 'Representa el rendimiento estándar en condiciones normales de entrenamiento profesional.', dato1: '~21.5W', label1: 'Precisión de predicción', dato2: '93', label2: 'Actividades profesionales' },
+              { modelo: 'BiLSTM', color: '#22c55e', nivel: 'Techo máximo', desc: 'Establece el techo máximo de rendimiento basado en los mejores patrones de ciclistas de élite.', dato1: '~21.8W', label1: 'Precisión de predicción', dato2: '60s', label2: 'Ventana de análisis' }, ,
             ].map((m, i) => (
               <div className="model-card" key={i} style={{ borderTop: `3px solid ${m.color}` }}>
                 <div className="model-header">
@@ -115,14 +115,6 @@ function Home() {
                 </div>
                 <p className="model-desc">{m.desc}</p>
                 <div className="model-metrics">
-                  <div className="model-metric">
-                    <span className="metric-val">{m.mae}</span>
-                    <span className="metric-lbl">Error medio</span>
-                  </div>
-                  <div className="model-metric">
-                    <span className="metric-val">{m.loss}</span>
-                    <span className="metric-lbl">Test Loss</span>
-                  </div>
                 </div>
               </div>
             ))}
@@ -152,7 +144,7 @@ function Home() {
           </div>
         </div>
         <div className="footer-bottom">
-          <span>© 2025 CycleAnalytics · TFG</span>
+          <span>© 2026 CycleAnalytics · TFG</span>
         </div>
       </div>
 
