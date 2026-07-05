@@ -1,0 +1,32 @@
+name: Tests Backend
+
+on:
+  push:
+    branches: [ develop, main, feature/tests ]
+  pull_request:
+    branches: [ develop, main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Instalar dependencias
+        working-directory: ./Backend
+        run: npm install
+
+      - name: Ejecutar tests con cobertura
+        working-directory: ./Backend
+        run: npm test
+        env:
+          NODE_ENV: test
+          STRAVA_CLIENT_ID: test_client_id
+          STRAVA_REDIRECT_URI: http://localhost:3000/callback
