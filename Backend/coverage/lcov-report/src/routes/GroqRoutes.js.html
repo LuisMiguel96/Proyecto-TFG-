@@ -1,0 +1,397 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for src/routes/GroqRoutes.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/routes</a> GroqRoutes.js</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>0/20</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>0/20</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>0/2</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>0/20</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+        <template id="filterTemplate">
+            <div class="quiet">
+                Filter:
+                <input type="search" id="fileSearch">
+            </div>
+        </template>
+    </div>
+    <div class='status-line low'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a>
+<a name='L91'></a><a href='#L91'>91</a>
+<a name='L92'></a><a href='#L92'>92</a>
+<a name='L93'></a><a href='#L93'>93</a>
+<a name='L94'></a><a href='#L94'>94</a>
+<a name='L95'></a><a href='#L95'>95</a>
+<a name='L96'></a><a href='#L96'>96</a>
+<a name='L97'></a><a href='#L97'>97</a>
+<a name='L98'></a><a href='#L98'>98</a>
+<a name='L99'></a><a href='#L99'>99</a>
+<a name='L100'></a><a href='#L100'>100</a>
+<a name='L101'></a><a href='#L101'>101</a>
+<a name='L102'></a><a href='#L102'>102</a>
+<a name='L103'></a><a href='#L103'>103</a>
+<a name='L104'></a><a href='#L104'>104</a>
+<a name='L105'></a><a href='#L105'>105</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const express = <span class="cstat-no" title="statement not covered" >require('express')</span>
+const router = <span class="cstat-no" title="statement not covered" >express.Router()</span>
+const Groq = <span class="cstat-no" title="statement not covered" >require('groq-sdk')</span>
+&nbsp;
+const groq = <span class="cstat-no" title="statement not covered" >new Groq({ apiKey: process.env.GROQ_API_KEY })</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >router.post('/analisis', <span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    try {</span>
+        const {
+            nombreActividad, distancia, vatiosCliente, vatiosRnn, vatiosLstm, vatiosBilstm,
+            cadencia, desviacionVatios, normalizedPower, variabilityIndex, picosDetectados,
+            segmentos
+        } = <span class="cstat-no" title="statement not covered" >req.body</span>
+&nbsp;
+        const segmentosTexto = <span class="cstat-no" title="statement not covered" >segmentos.map(<span class="fstat-no" title="function not covered" >s </span>=&gt;</span>
+<span class="cstat-no" title="statement not covered" >            `· ${s.tipo.toUpperCase()} #${s.tramo} (${s.duracion_s}s, pendiente media ${s.pendiente}%): potencia media ${s.cliente}W, pico máximo ${s.pico_max}W, cadencia ${s.cadencia}rpm | referencia RNN ${s.rnn}W (${s.cliente - s.rnn &gt; 0 ? '+' : ''}${s.cliente - s.rnn}W) · LSTM ${s.lstm}W (${s.cliente - s.lstm &gt; 0 ? '+' : ''}${s.cliente - s.lstm}W) · BiLSTM ${s.bilstm}W (${s.cliente - s.bilstm &gt; 0 ? '+' : ''}${s.cliente - s.bilstm}W)`</span>
+        ).join('\n')
+&nbsp;
+        const prompt =<span class="cstat-no" title="statement not covered" >`Responde en HTML básico usando &lt;h3&gt; para títulos de sección, &lt;p&gt; para párrafos y &lt;strong&gt; para datos importantes. No uses CSS ni clases externas, solo etiquetas HTML simples quiero que me respondas en español de españa :Eres un director deportivo de un equipo ciclista World Tour, sentado revisando el potenciómetro de tu corredor justo después del entrenamiento, pero este analisis es cognitivo es como si tuviera los datos a tiempo real y pudiera aplicarlo. No eres un chatbot genérico de fitness: eres un experto que lleva 20 años analizando datos de potencia de profesionales y sabes leer entre líneas lo que los números esconden — gestión del esfuerzo, errores tácticos, riesgo de pájara, fatiga neuromuscular, ineficiencia de pedaleo.</span>
+&nbsp;
+Hablas directamente al corredor, tuteándolo, con la franqueza y exigencia de un director que quiere que mejore, no que se sienta bien. No le endulces nada, pero tampoco lo machaques sin argumento: cada afirmación debe estar anclada en un dato concreto de los que tienes delante.
+&nbsp;
+IMPORTANTE SOBRE EL LENGUAJE: el corredor NO es un científico del deporte. Nunca uses términos técnicos como "VI", "Índice de Variabilidad", esto si porque es importante "Potencia Normalizada" o "NP" tal cual — tradúcelos siempre a lenguaje llano y cercano. Por ejemplo, en vez de "tu VI es de 1.18" di algo como "has pedaleado muy a trompicones, con muchas arrancadas y frenazos, lo que te ha costado bastante más energía de la que dice tu potencia media". El dato técnico es para que TÚ razones internamente, pero lo que el corredor lee debe sonar como una conversación real con su director, no como un informe de laboratorio.
+&nbsp;
+═══ FICHA DE LA SALIDA (para tu análisis interno, no la repitas como tabla) ═══
+Actividad: ${nombreActividad}
+Distancia: ${distancia} km
+Potencia media: ${vatiosCliente}W
+Potencia normalizada (esfuerzo real percibido por el cuerpo): ${normalizedPower}W
+Índice de variabilidad (NP/media): ${variabilityIndex} → ${parseFloat(variabilityIndex) &gt; 1.15 ? 'pedaleo MUY irregular, con arrancadas que cuestan mucha energía extra' : parseFloat(variabilityIndex) &gt; 1.08 ? 'pedaleo moderadamente irregular' : 'pedaleo muy constante y eficiente'}
+Desviación de potencia: ±${desviacionVatios}W respecto a la media
+Arrancadas/picos fuertes detectados (más del 150% de su potencia media): ${picosDetectados}
+Cadencia media: ${cadencia} rpm (zona neuromuscular óptima 90-95 rpm) → ${cadencia &lt; 80 ? 'cadencia baja, pedaleo de fuerza' : cadencia &gt; 95 ? 'cadencia alta' : 'cadencia correcta'}
+&nbsp;
+═══ NIVELES DE REFERENCIA (modelos de IA entrenados con datos reales de ciclistas profesionales) ═══
+- Umbral mínimo profesional: ${vatiosRnn}W
+- Nivel estándar profesional: ${vatiosLstm}W
+- Techo de rendimiento: ${vatiosBilstm}W
+&nbsp;
+═══ DESGLOSE TRAMO A TRAMO (orden cronológico real de la ruta) ═══
+${segmentosTexto}
+&nbsp;
+═══ CÓMO QUIERO QUE ANALICES ═══
+Lee el desglose tramo a tramo como una secuencia temporal, no como datos aislados:
+&nbsp;
+1. Compara el "pico_max" con la "potencia media" de cada tramo. Si el pico es muy superior a la media, eso es una arrancada o sprint puntual — coméntalo señalando en qué tramo ocurre, explicando de forma sencilla qué efecto tiene ("esa salida tan fuerte en la subida 3 te ha pasado factura después").
+2. Sigue la potencia media de los tramos de subida en orden cronológico. Si cae de un tramo a otro sin que la pendiente lo justifique, es fatiga acumulada arrastrada — explícalo en términos de sensaciones reales ("se nota que las piernas ya no respondían igual").
+3. Relaciona las arrancadas detectadas con la irregularidad del pedaleo para explicar, sin tecnicismos, por qué se queda sin fuerzas más tarde.
+4. Usa la cadencia de cada tramo. Si en las subidas baja mucho, explica de forma cercana que está "tirando de fuerza" en vez de "girar" la pierna, y lo que eso supone para sus músculos a medio plazo.
+5. Integra los datos en frases naturales de conversación, nunca como listas de números sueltos.
+&nbsp;
+═══ ESTRUCTURA DEL INFORME ═══
+Sé todo lo extenso y detallado que el análisis requiera, como un informe real de un director deportivo hablando con su corredor, sin relleno innecesario pero sin recortar contenido de valor.
+&nbsp;
+🔍 LECTURA GENERAL DE LA SALIDA
+Tu primera impresión como director al ver estos números: ¿gestión inteligente o gasto de pólvora? Sin tecnicismos.
+&nbsp;
+⚡ CÓMO HAS REPARTIDO LA ENERGÍA
+Explica de forma cercana si ha sido un pedaleo constante o a trompicones, dónde han estado las arrancadas más fuertes y qué consecuencia real ha tenido.
+&nbsp;
+⛰️ TRAMO A TRAMO: LAS SUBIDAS
+Recorre las subidas en orden explicando la evolución de la potencia con lenguaje de entrenador, comparando con los tres niveles de referencia de forma natural ("aquí ibas muy por encima de lo que haría un profesional en este tipo de rampa", "aquí ya ibas justo con el mínimo exigible").
+&nbsp;
+🔄 TU PEDALEO Y LA CADENCIA
+Qué está pasando con la cadencia tramo a tramo, explicado en términos de sensación física y consecuencia muscular, sin hablar de "rpm óptimas" como un dato frío.
+&nbsp;
+🚩 LO QUE ME PREOCUPA
+Cualquier patrón que en tu experiencia te haría vigilar de cerca a este corredor: riesgo de quedarse sin piernas, de sobrecargar una zona muscular, de no llegar bien a los tramos finales.
+&nbsp;
+📈 EN QUÉ PUNTO DE FORMA ESTÁS
+Tu valoración honesta y cercana: ¿está cerca de su mejor nivel, en fase de construcción, o necesita más base?
+&nbsp;
+🗓️ PLAN PARA LA PRÓXIMA SEMANA
+Instrucciones muy concretas y prácticas, como las darías en persona: qué tipo de entrenamiento hacer, en qué centrarse, qué evitar repetir de esta salida.
+&nbsp;
+🎯 LO QUE TE DIRÍA MIRÁNDOTE A LA CARA
+Una conclusión directa y motivadora, en tono cercano de vestuario, resumiendo lo más importante en pocas frases.`
+&nbsp;
+        const completion = <span class="cstat-no" title="statement not covered" >await groq.chat.completions.create({</span>
+            messages: [{ role: 'user', content: prompt }],
+            model: 'openai/gpt-oss-120b',
+            max_tokens: 4096,
+            temperature: 0.8
+        })
+&nbsp;
+        let analisis = <span class="cstat-no" title="statement not covered" >completion.choices[0]?.message?.content || ''</span>
+&nbsp;
+        // Eliminar bloque &lt;think&gt;...&lt;/think&gt; completo
+<span class="cstat-no" title="statement not covered" >        analisis = analisis.replace(/&lt;think&gt;[\s\S]*?&lt;\/think&gt;/g, '').trim()</span>
+&nbsp;
+        // Fallback: si hay &lt;think&gt; sin cerrar, quedarse con lo que hay DESPUÉS
+<span class="cstat-no" title="statement not covered" >        if (analisis.includes('&lt;think&gt;')) {</span>
+            const partes = <span class="cstat-no" title="statement not covered" >analisis.split('&lt;/think&gt;')</span>
+<span class="cstat-no" title="statement not covered" >            analisis = partes.length &gt; 1 ? partes[partes.length - 1].trim() : analisis</span>
+        }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        res.json({ analisis })</span>
+&nbsp;
+    } catch (err) {
+<span class="cstat-no" title="statement not covered" >        console.error('Error Groq:', err)</span>
+<span class="cstat-no" title="statement not covered" >        res.status(500).json({ error: 'Error al generar el análisis' })</span>
+    }
+})
+&nbsp;
+<span class="cstat-no" title="statement not covered" >module.exports = router</span></pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
+                at 2026-07-05T09:42:32.635Z
+            </div>
+        <script src="../../prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="../../sorter.js"></script>
+        <script src="../../block-navigation.js"></script>
+    </body>
+</html>
+    
