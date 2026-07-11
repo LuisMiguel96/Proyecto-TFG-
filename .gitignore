@@ -13,3 +13,6 @@ ML/api/src/models/*.pkl
 ML/outputs/dataset_features.csv
 ML/outputs/dataset_limpio.csv
 Backend/coverage/
+opencode.json
+AGENTS.md
+CAMBIOS.md
